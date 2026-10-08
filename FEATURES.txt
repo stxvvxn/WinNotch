@@ -19,6 +19,7 @@ THE NOTCH
 - Always on top of everything, with an optional auto-hide for full screen
   apps, games and videos
 - Start with Windows
+- Settings window with a Features tab (this list)
 - Tray icon: Settings, Hide/show the notch, Check for updates, Close
 
 

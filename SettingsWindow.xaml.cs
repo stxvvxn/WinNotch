@@ -60,6 +60,10 @@ public partial class SettingsWindow : Window
         UpdateRepoBox.Text = s.UpdateRepo;
         VersionText.Text = $"You have version {Updater.CurrentVersion}. New versions come from the repo's GitHub releases.";
 
+        // Features
+        AboutText.Text = $"WinNotch {Updater.CurrentVersion} · everything it can do";
+        FeaturesText.Text = LoadFeatures();
+
         // Theme
         BuildAccentSwatches();
         AccentHexBox.Text = s.AccentColor;
@@ -192,6 +196,34 @@ public partial class SettingsWindow : Window
         s.ImageOutput = SelectedTag(ImageOutputBox) ?? "beside";
 
         _owner.SettingsChanged();
+    }
+
+    // ---------- Features ----------
+
+    // FEATURES.txt is built into the exe, so the list always matches the version you're running
+    private static string LoadFeatures()
+    {
+        try
+        {
+            using var stream = typeof(SettingsWindow).Assembly.GetManifestResourceStream("WinNotch.FEATURES.txt");
+            if (stream == null) return "";
+            using var reader = new System.IO.StreamReader(stream);
+            return reader.ReadToEnd().TrimEnd();
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private void OpenGitHub_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                $"https://github.com/{_owner.Settings.UpdateRepo}") { UseShellExecute = true });
+        }
+        catch { }
     }
 
     // ---------- Handheld ----------

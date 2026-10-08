@@ -27,6 +27,8 @@
   <ItemGroup>
     <!-- Built into the exe so the tray icon can use it -->
     <EmbeddedResource Include="notch.ico" LogicalName="WinNotch.notch.ico" />
+    <!-- Shown on the Features tab in Settings -->
+    <EmbeddedResource Include="FEATURES.txt" LogicalName="WinNotch.FEATURES.txt" />
   </ItemGroup>
 
   <ItemGroup>

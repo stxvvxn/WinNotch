@@ -571,6 +571,29 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
+            <!-- ============ Features ============ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE946;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Features"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Style="{StaticResource Page}">
+                    <StackPanel>
+                        <DockPanel Margin="2,14,0,8">
+                            <Button Content="View on GitHub" Click="OpenGitHub_Click" DockPanel.Dock="Right" Padding="12,4"/>
+                            <TextBlock x:Name="AboutText" Style="{StaticResource Hint}" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <Border Style="{StaticResource Card}" Padding="16,12">
+                            <TextBox x:Name="FeaturesText" IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                                     Foreground="#DDDDDD" FontFamily="Cascadia Mono, Consolas" FontSize="12"
+                                     TextWrapping="Wrap" IsTabStop="False"/>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
         </TabControl>
 
         <!-- Footer -->
