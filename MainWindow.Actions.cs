@@ -151,7 +151,7 @@ public partial class MainWindow
     // Adds Steam and Xbox app buttons the first time ROG Ally mode is switched on
     private string AddAllyActionsOnce(string text)
     {
-        if (!_settings.RogAlly || _settings.AllyActionsAdded) return text;
+        if (!_settings.Handheld || _settings.AllyActionsAdded) return text;
         _settings.AllyActionsAdded = true;
         _settings.Save();
         return text.Contains("\"Steam\"", StringComparison.OrdinalIgnoreCase)

@@ -22,7 +22,9 @@ public partial class SettingsWindow : Window
     {
         var s = _owner.Settings;
 
-        RogAllyBox.IsChecked = s.RogAlly;
+        HandheldBox.IsChecked = s.Handheld;
+        HandheldHotkeyBox.Text = s.AllyHotkey;
+        BuildDevicePicker();
         AutoProfileBox.IsChecked = s.AutoProfile;
         StartWithWindowsBox.IsChecked = s.StartWithWindows;
         HideInFullscreenBox.IsChecked = s.HideInFullscreen;
@@ -115,7 +117,13 @@ public partial class SettingsWindow : Window
         if (_loading) return;
         var s = _owner.Settings;
 
-        s.RogAlly = RogAllyBox.IsChecked == true;
+        s.Handheld = HandheldBox.IsChecked == true;
+        if (DevicePicker.Children.OfType<RadioButton>().FirstOrDefault(r => r.IsChecked == true)?.Tag is string device)
+            s.HandheldDevice = device;
+        string handheldKey = HandheldHotkeyBox.Text.Trim();
+        if (KeySender.TryParseHotkey(handheldKey, out _, out _)) s.AllyHotkey = handheldKey;
+        HandheldHotkeyBox.Text = s.AllyHotkey;
+        ShowDeviceTip();
         s.AutoProfile = AutoProfileBox.IsChecked == true;
         s.StartWithWindows = StartWithWindowsBox.IsChecked == true;
         s.HideInFullscreen = HideInFullscreenBox.IsChecked == true;
@@ -184,6 +192,42 @@ public partial class SettingsWindow : Window
         s.ImageOutput = SelectedTag(ImageOutputBox) ?? "beside";
 
         _owner.SettingsChanged();
+    }
+
+    // ---------- Handheld ----------
+
+    // One choice per handheld, plus "work it out for me"
+    private void BuildDevicePicker()
+    {
+        DevicePicker.Children.Clear();
+        var detected = Handhelds.Detect();
+        var choices = new List<(string Key, string Label)>
+        {
+            ("auto", detected != null ? $"Detect automatically (this is a {detected.Name})" : "Detect automatically (no handheld found)"),
+        };
+        choices.AddRange(Handhelds.All.Select(d => (d.Key, d.Name)));
+
+        foreach (var (key, label) in choices)
+        {
+            var radio = new RadioButton
+            {
+                Content = label,
+                Tag = key,
+                GroupName = "Handheld",
+                IsChecked = string.Equals(_owner.Settings.HandheldDevice, key, StringComparison.OrdinalIgnoreCase),
+            };
+            radio.Checked += Changed;
+            DevicePicker.Children.Add(radio);
+        }
+        ShowDeviceTip();
+    }
+
+    private void ShowDeviceTip()
+    {
+        var s = _owner.Settings;
+        DeviceCard.IsEnabled = s.Handheld;
+        DeviceCard.Opacity = s.Handheld ? 1 : 0.5;
+        DeviceTip.Text = Handhelds.Current(s).ButtonTip.Replace("Ctrl+Alt+N", s.AllyHotkey);
     }
 
     // ---------- Theme ----------

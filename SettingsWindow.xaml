@@ -15,6 +15,11 @@
             <Setter Property="Margin" Value="0,5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
         <Style x:Key="Heading" TargetType="TextBlock">
             <Setter Property="Foreground" Value="#8A8A8A"/>
             <Setter Property="FontSize" Value="11"/>
@@ -523,12 +528,12 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ============ ROG Ally ============ -->
+            <!-- ============ Handheld ============ -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE7FC;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
-                        <TextBlock Text="ROG Ally"/>
+                        <TextBlock Text="Handheld"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer Style="{StaticResource Page}">
@@ -536,9 +541,22 @@
                         <TextBlock Text="HANDHELD MODE" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <CheckBox x:Name="RogAllyBox" Content="ROG Ally mode" Click="Changed"/>
+                                <CheckBox x:Name="HandheldBox" Content="Handheld gaming PC mode" Click="Changed"/>
                                 <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
-                                           Text="Tap to open, controller support (hold View + Menu, or Ctrl+Alt+N), battery details, low battery warnings, quick switches and sliders, Steam / Xbox buttons."/>
+                                           Text="Tap to open, controller support (hold View + Menu), bigger buttons, battery details, low battery warnings, quick switches and sliders, Steam / Xbox buttons."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="YOUR DEVICE" Style="{StaticResource Heading}"/>
+                        <Border x:Name="DeviceCard" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel x:Name="DevicePicker"/>
+                                <DockPanel Margin="0,6,0,0">
+                                    <TextBlock Text="Open-notch shortcut" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="HandheldHotkeyBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
+                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. Ctrl+Alt+N"/>
+                                </DockPanel>
+                                <TextBlock x:Name="DeviceTip" Style="{StaticResource Hint}" Margin="0,4,0,6"/>
                             </StackPanel>
                         </Border>
 

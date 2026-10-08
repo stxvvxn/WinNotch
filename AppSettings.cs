@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Win32;
 
 namespace WinNotch;
@@ -7,9 +8,11 @@ namespace WinNotch;
 /// <summary>Everything you can change in the Settings window. Saved to %AppData%\WinNotch\settings.json.</summary>
 public sealed class AppSettings
 {
-    // Device
-    public bool RogAlly { get; set; }
-    public string AllyHotkey { get; set; } = "Ctrl+Alt+N"; // opens the notch; map an Ally back button to it
+    // Handheld mode (ROG Ally, Steam Deck, Legion Go...). Saved as "RogAlly" so older settings still load.
+    [JsonPropertyName("RogAlly")]
+    public bool Handheld { get; set; }
+    public string HandheldDevice { get; set; } = "auto";   // auto / rogally / xboxally / steamdeck / legiongo / claw / other
+    public string AllyHotkey { get; set; } = "Ctrl+Alt+N"; // opens the notch; map a back button to it
     public bool AutoProfile { get; set; } = true;          // switch Hz + power mode when plugging in / unplugging
     public Dictionary<string, GameProfile> GameProfiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 

@@ -102,7 +102,7 @@ public partial class MainWindow
 
     private void OnPowerSourceChanged(bool pluggedIn)
     {
-        if (!_settings.RogAlly || !_settings.AutoProfile) return;
+        if (!_settings.Handheld || !_settings.AutoProfile) return;
         if (_game?.ProfileApplied == true) return; // the game's own settings win while it runs
         ApplyPowerSourceProfile(pluggedIn, announce: true);
     }
@@ -204,7 +204,7 @@ public partial class MainWindow
             Charged = _battPluggedIn,
         };
 
-        if (_settings.RogAlly && _settings.GameProfiles.TryGetValue(_game.Key, out var profile))
+        if (_settings.Handheld && _settings.GameProfiles.TryGetValue(_game.Key, out var profile))
         {
             _game.Before = (CurrentRefreshRate(), CurrentPowerModeIndex());
             SetRefreshRate(profile.RefreshRate);
@@ -241,7 +241,7 @@ public partial class MainWindow
 
         // Session summary (skip quick launches)
         var length = DateTime.Now - game.Started;
-        if (!_settings.RogAlly || length < TimeSpan.FromMinutes(2)) return;
+        if (!_settings.Handheld || length < TimeSpan.FromMinutes(2)) return;
 
         var parts = new List<string> { FormatDuration(length) };
         if (!game.Charged && game.StartPercent >= 0 && _battPercent >= 0 && game.StartPercent > _battPercent)
@@ -372,7 +372,7 @@ public partial class MainWindow
     private double _downloadRate; // bytes per second
     private bool _wasDownloadShowing;
 
-    private bool DownloadShowing => _settings.RogAlly && _downloadRate > 300_000;
+    private bool DownloadShowing => _settings.Handheld && _downloadRate > 300_000;
 
     private void SampleNetwork()
     {

@@ -1,7 +1,7 @@
 # WinNotch
 
 A MacBook-style notch / Dynamic Island for Windows: now playing, shelf, quick actions for your apps,
-pop-ups, timer, clipboard history, notes, calculator, system stats, bubbles, themes and an ROG Ally mode.
+pop-ups, timer, clipboard history, notes, calculator, system stats, bubbles, themes and a handheld mode (ROG Ally, Steam Deck, Legion Go, MSI Claw).
 
 ## Download
 

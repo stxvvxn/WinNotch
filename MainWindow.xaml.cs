@@ -136,7 +136,7 @@ public partial class MainWindow : Window
     private void ApplySettings()
     {
         double scale = _settings.Size switch { "small" => 0.85, "large" => 1.2, _ => 1.0 };
-        if (_settings.RogAlly) scale = Math.Max(scale, 1.25); // bigger targets for fingers
+        if (_settings.Handheld) scale = Math.Max(scale, 1.25); // bigger targets for fingers
         Root.LayoutTransform = new ScaleTransform(scale, scale);
         Width = WindowW * scale;
         Height = WindowH * scale;
@@ -358,7 +358,7 @@ public partial class MainWindow : Window
 
         if (expand)
         {
-            if (_settings.RogAlly) RefreshAllyPanel();
+            if (_settings.Handheld) RefreshAllyPanel();
             UpdateStats();
         }
         else
@@ -429,10 +429,10 @@ public partial class MainWindow : Window
         TimerPanel.Visibility = Vis(_openTool == "timer");
         ClipboardPanel.Visibility = Vis(_openTool == "clipboard");
         ClaudePanel.Visibility = Vis(_openTool == "claude");
-        AllyPanel.Visibility = Vis(!tool && _settings.RogAlly);
+        AllyPanel.Visibility = Vis(!tool && _settings.Handheld);
 
         DateText.Text = DateTime.Now.ToString("dddd d MMMM");
-        DateText.Visibility = Vis(!tool && !MediaShown && !_actionsWanted && !ShelfVisible && !_settings.RogAlly && !_settings.ShowStats);
+        DateText.Visibility = Vis(!tool && !MediaShown && !_actionsWanted && !ShelfVisible && !_settings.Handheld && !_settings.ShowStats);
 
         TimerToolButton.Foreground = _openTool == "timer" ? AccentOrange : Brushes.White;
         ClipboardToolButton.Foreground = _openTool == "clipboard" ? AccentOrange : Brushes.White;

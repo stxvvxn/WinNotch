@@ -27,7 +27,7 @@ public partial class MainWindow
     private DateTime _lastAllyInteraction = DateTime.Now;
     private bool _overlayActive;           // notch temporarily shown over a fullscreen game
 
-    private bool KeepOpen => _settings.RogAlly && (_touchOpen || _navActive);
+    private bool KeepOpen => _settings.Handheld && (_touchOpen || _navActive);
 
     // ---------- Switching the mode on / off ----------
 
@@ -46,7 +46,7 @@ public partial class MainWindow
             };
         }
 
-        if (_settings.RogAlly)
+        if (_settings.Handheld)
         {
             if (!_allyWndProcHooked && _hwnd != IntPtr.Zero)
             {
@@ -109,7 +109,7 @@ public partial class MainWindow
     /// <summary>The shortcut or View + Menu on the controller: glance in games, otherwise open for the controller.</summary>
     private void OnAllyButton()
     {
-        if (!_settings.RogAlly || _userHidden) return;
+        if (!_settings.Handheld || _userHidden) return;
         _lastAllyInteraction = DateTime.Now;
 
         if (_hiddenForFullscreen)
@@ -154,7 +154,7 @@ public partial class MainWindow
 
     private void Pill_PreviewTouchDown(object sender, TouchEventArgs e)
     {
-        if (!_settings.RogAlly) return;
+        if (!_settings.Handheld) return;
         _lastAllyInteraction = DateTime.Now;
         if (_alarmTimer != null) StopAlarm();
 
@@ -393,7 +393,7 @@ public partial class MainWindow
 
     private void UpdateAllyStatsText()
     {
-        if (!_settings.RogAlly) return;
+        if (!_settings.Handheld) return;
         AllyBatteryGlyph.Text = BatteryGlyph();
         AllyStatsText.Text = _battPercent < 0 ? DateTime.Now.ToString("dddd d MMMM") : BatterySummary(includePercent: true);
         if (_battPercent >= 0) BatteryIcon.ToolTip = BatterySummary(includePercent: true);
@@ -409,7 +409,7 @@ public partial class MainWindow
             _lowWarnedAt = 101;
             return;
         }
-        if (!_settings.RogAlly) return;
+        if (!_settings.Handheld) return;
 
         int threshold = percent <= 10 ? 10 : percent <= 20 ? 20 : 0;
         if (threshold == 0 || _lowWarnedAt <= threshold) return;
