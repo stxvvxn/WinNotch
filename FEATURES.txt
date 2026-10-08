@@ -1,0 +1,132 @@
+WINNOTCH - FEATURE LIST
+=======================
+
+A MacBook-style notch / Dynamic Island for Windows. It sits at the top of your
+screen; hover over it (or tap it) to open it.
+Single portable exe, no install needed. Everything can be switched on/off in Settings.
+
+
+THE NOTCH
+---------
+- Small black notch at the top of the screen that expands when you hover over it
+- Clock, always visible (also when open)
+- Weather icon (current conditions for your location, no setup needed)
+- Battery icon, with a lightning bolt while charging
+- Camera and microphone in-use dots (like the green/orange dots on a Mac)
+- Red mic icon while your microphone is muted
+- Choose the size (small / normal / large), width (narrow / normal / wide)
+  and which screen it appears on (main, follow the mouse, or a specific display)
+- Always on top of everything, with an optional auto-hide for full screen
+  apps, games and videos
+- Start with Windows
+- Tray icon: Settings, Hide/show the notch, Check for updates, Close
+
+
+NOW PLAYING
+-----------
+- Song, artist and album art from Spotify, browsers, Apple Music etc.
+- Play / pause, next, previous
+- Progress bar you can click to skip through the song
+- Animated sound bars while music plays
+- Briefly pops open when the song changes (optional)
+- Hides itself when nothing is playing (or turn it off completely)
+
+
+POP-UPS (DYNAMIC ISLAND STYLE)
+------------------------------
+- Volume change
+- Screen brightness change (laptops)
+- Charger plugged in
+- Microphone muted / unmuted
+- Timer finished
+
+
+SHELF
+-----
+- Drag files onto the notch to keep them there, drag them out again to
+  copy them somewhere else
+- Remembered between restarts
+- Right-click: open, show in folder, remove
+- Image actions (right-click an image): convert to PNG, convert to JPG,
+  resize to a set width, compress, copy image
+  (resize width, JPG quality and where new files are saved are all adjustable)
+
+
+QUICK ACTIONS FOR YOUR APPS
+---------------------------
+When one of these apps is in front, the open notch shows shortcut buttons for it:
+- Photoshop:     Quick Export, Export As, Save As, Transform, Fit Screen, Undo
+- CapCut:        Split, Delete, Play/Pause, Undo, Import, Export
+- Chrome / Edge: New Tab, Reopen Tab, Back, Reload, Downloads, Private
+- Firefox:       New Tab, Reopen Tab, Back, Reload, Downloads, Private
+- File Explorer: New Folder, Rename, Copy Path, Up, New Tab, Properties
+- Word:          Save As, Bold, Comment, Word Count, Track Changes, Replace
+- Outlook (classic and new): New Email, Reply, Reply All, Forward, Mark Read, Calendar
+- Discord:       Mute, Deafen, Switcher, Search, Mark Read, Upload
+- Claude:        New Chat, Explain, Summarise, Fix Writing, Code, New Task
+- Steam:         Big Picture, Library, Store, Downloads, Friends
+- Xbox app:      Game Bar, Screenshot, Record That, Record, Mic
+- Fully editable (actions.json): add your own apps, shortcuts, programs or links
+
+
+TOOLS (BUTTONS ALONG THE TOP OF THE OPEN NOTCH)
+-----------------------------------------------
+- Clean up: clears temp files, crash dumps and browser caches
+- Screenshot to shelf: Snipping Tool or ShareX (Ctrl+PrintScreen)
+- Colour picker: click anywhere on screen to copy its colour
+- Timer, stopwatch and Pomodoro (with a chime when time is up)
+- Clipboard history: click anything you copied earlier to copy it again
+- Claude buttons: new chat, explain / summarise / fix what you last copied
+- Mic mute: mutes every microphone in Windows (Teams, Discord, Zoom, games),
+  also with a shortcut that works anywhere (Ctrl+Alt+Shift+M, changeable)
+- Quick notes: a notepad that saves as you type
+- Calculator and converter:
+    sums           12*4+3, 15% of 80, 200 + 20%, sqrt(2), 2^10
+    units          5 ft in cm, 70 f to c, 3 stone to kg, 2 gb in mb, 10 mph to kph
+    currencies     20 usd to gbp, £50 in eur (live daily rates)
+    Enter copies the answer
+
+
+BUBBLES
+-------
+- Round shortcut buttons that pop out around the open notch
+- Defaults: Camera, Terminal, Pictures, Documents, Music
+- Add your own (ready-made presets or any folder, app or link) with a choice of icons
+- Arrange them by dragging, with separate layouts for the tall, short and mini notch
+
+
+SYSTEM STATS
+------------
+- CPU use, memory use and network speed (down / up) in the open notch
+
+
+THEMES
+------
+- Accent colour: 9 presets or any colour you like
+- Notch style: black, graphite, glass (see-through) or black with an outline
+- Optionally colour the progress and volume bars too
+
+
+HANDHELD MODE (ROG Ally / Ally X, ROG Xbox Ally, Steam Deck, Legion Go, MSI Claw...)
+------------------------------------------------------------------------------------
+- Detects which handheld you have, or pick it yourself
+- Tap to open, bigger buttons for fingers
+- Controller navigation: hold View + Menu, or a back button mapped to Ctrl+Alt+N
+- Quick glance over games
+- Battery details: percentage, time left, power draw graph, battery health
+- Low battery warnings (shown even over games)
+- Brightness and volume sliders
+- Quick switches: Wi-Fi, Bluetooth, Airplane mode, refresh rate, power mode,
+  resolution (720p / 1080p), on-screen keyboard, Game Bar, stay awake, screen off
+- Download speed, and stay awake until a download finishes
+- Automatic profiles: max Hz + Performance when plugged in,
+  60 Hz + Efficiency on battery
+- Per-game profiles (remembers refresh rate and power mode for each game)
+- Play session stats
+
+
+UPDATES
+-------
+- Checks GitHub for new versions and offers to update itself
+  (shows what's new; Update now / Later / Skip this version)
+- Updates install in a few seconds and WinNotch restarts by itself
