@@ -106,6 +106,7 @@ THEMES
 - Accent colour: 9 presets or any colour you like
 - Notch style: black, graphite, glass (see-through) or black with an outline
 - Optionally colour the progress and volume bars too
+- The Settings window follows your accent colour too
 
 
 HANDHELD MODE (ROG Ally / Ally X, ROG Xbox Ally, Steam Deck, Legion Go, MSI Claw...)

@@ -14,7 +14,8 @@ public partial class SettingsWindow
     private const double TallHeight = 210, ShortHeight = 110, MiniHeight = 80;
     private const double DropDistance = 30;       // how close (preview pixels) a drop must be to a spot
 
-    private static readonly Brush Orange = Frozen(Color.FromRgb(0xFF, 0x9F, 0x0A));
+    // The accent colour from Settings → Theme (kept up to date by ApplyAccentToWindow)
+    private Brush Orange => (Brush)Resources["Accent"];
     private static readonly Brush SlotStroke = Frozen(Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
     private static readonly FontFamily IconFont = new("Segoe Fluent Icons, Segoe MDL2 Assets");
 
@@ -63,7 +64,7 @@ public partial class SettingsWindow
         {
             Width = PreviewNotchWidth * k,
             Height = notchHeight * k,
-            Background = Brushes.Black,
+            Background = MainWindow.NotchBrushFor(_owner.Settings.NotchStyle),
             BorderBrush = SlotStroke,
             BorderThickness = new Thickness(1, 0, 1, 1),
             CornerRadius = new CornerRadius(0, 0, 16, 16),
@@ -186,7 +187,7 @@ public partial class SettingsWindow
 
         var circle = new Ellipse
         {
-            Fill = Brushes.Black,
+            Fill = MainWindow.NotchBrushFor(_owner.Settings.NotchStyle),
             Stroke = selected || overflow ? Orange : new SolidColorBrush(Color.FromArgb(0x66, 0xFF, 0xFF, 0xFF)),
             StrokeThickness = selected ? 2 : 1,
         };

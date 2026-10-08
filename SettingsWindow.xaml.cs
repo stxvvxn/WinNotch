@@ -290,8 +290,18 @@ public partial class SettingsWindow : Window
     }
 
     // Outlines the chosen swatch and shows the colour beside the hex box
+    /// <summary>Recolours this window (tabs, tick boxes, bubble preview) with the accent colour.</summary>
+    private void ApplyAccentToWindow()
+    {
+        if (!MainWindow.TryParseColour(_owner.Settings.AccentColor, out var c)) c = Color.FromRgb(0xFF, 0x9F, 0x0A);
+        if (Resources["Accent"] is not SolidColorBrush b || b.Color != c)
+            Resources["Accent"] = new SolidColorBrush(c);
+        DrawBubblePreview(); // also picks up a new notch style
+    }
+
     private void ShowAccent()
     {
+        ApplyAccentToWindow();
         string current = _owner.Settings.AccentColor;
         if (MainWindow.TryParseColour(current, out var c)) AccentPreview.Background = new SolidColorBrush(c);
         foreach (var child in AccentSwatches.Children.OfType<Button>())

@@ -32,6 +32,14 @@ public partial class MainWindow
         }
     }
 
+    /// <summary>The notch's background for a style (also used by the Settings preview).</summary>
+    public static Brush NotchBrushFor(string style) => style switch
+    {
+        "grey" => Frozen(Color.FromRgb(0x1C, 0x1C, 0x1E)),
+        "glass" => Frozen(Color.FromArgb(0xC8, 0x12, 0x12, 0x14)),
+        _ => Brushes.Black,
+    };
+
     private void ApplyTheme()
     {
         // Accent: open-tool buttons, timer, controller ring, and (optionally) the bars
@@ -43,12 +51,7 @@ public partial class MainWindow
         HudFill.Background = _settings.AccentBars ? AccentOrange : Brushes.White;
 
         // Notch style
-        NotchBrush = _settings.NotchStyle switch
-        {
-            "grey" => Frozen(Color.FromRgb(0x1C, 0x1C, 0x1E)),
-            "glass" => Frozen(Color.FromArgb(0xC8, 0x12, 0x12, 0x14)),
-            _ => Brushes.Black,
-        };
+        NotchBrush = NotchBrushFor(_settings.NotchStyle);
         Pill.Background = NotchBrush;
         bool outline = _settings.NotchStyle is "outline" or "glass";
         Pill.BorderBrush = outline ? Frozen(Color.FromArgb(_settings.NotchStyle == "outline" ? (byte)0x55 : (byte)0x33, 0xFF, 0xFF, 0xFF)) : null;
