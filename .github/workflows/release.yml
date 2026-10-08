@@ -1,0 +1,42 @@
+# Every push to main builds WinNotch.exe on GitHub and publishes it as a new release.
+# The app checks the latest release and offers to update itself.
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write # needed to create releases
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      VERSION: 1.0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build single-file exe
+        run: >
+          dotnet publish WinNotch.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:Version=${{ env.VERSION }}
+          -o publish
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: WinNotch ${{ env.VERSION }}
+          body: ${{ github.event.head_commit.message }}
+          files: publish/WinNotch.exe
