@@ -387,6 +387,8 @@ public partial class MainWindow : Window
 
         Fade(ExpandedView, expand ? 1 : 0, expand ? 220 : 100, expand ? 140 : 0);
         Fade(TopLeftBar, expand ? 1 : 0, expand ? 220 : 100, expand ? 140 : 0);
+        if (expand) DateText.Text = DateTime.Now.ToString("dddd d MMMM");
+        Fade(DateText, expand ? 1 : 0, expand ? 220 : 100, expand ? 140 : 0);
         Fade(CompactView, expand ? 0 : 1, expand ? 80 : 200, expand ? 0 : 120);
         Fade(StatusBar, 1, 150);
 
@@ -432,7 +434,7 @@ public partial class MainWindow : Window
         AllyPanel.Visibility = Vis(!tool && _settings.Handheld);
 
         DateText.Text = DateTime.Now.ToString("dddd d MMMM");
-        DateText.Visibility = Vis(!tool && !MediaShown && !_actionsWanted && !ShelfVisible && !_settings.Handheld && !_settings.ShowStats);
+        DateText.Visibility = Visibility.Visible; // always shown under the top buttons
 
         TimerToolButton.Foreground = _openTool == "timer" ? AccentOrange : Brushes.White;
         ClipboardToolButton.Foreground = _openTool == "clipboard" ? AccentOrange : Brushes.White;

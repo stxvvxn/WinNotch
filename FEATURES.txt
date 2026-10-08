@@ -10,6 +10,7 @@ THE NOTCH
 ---------
 - Small black notch at the top of the screen that expands when you hover over it
 - Clock, always visible (also when open)
+- Today's date, always shown under the buttons when the notch is open
 - Weather icon (current conditions for your location, no setup needed)
 - Battery icon, with a lightning bolt while charging
 - Camera and microphone in-use dots (like the green/orange dots on a Mac)

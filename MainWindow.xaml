@@ -324,6 +324,10 @@
             </Grid>
 
             <!-- ============ Status (top-right, always visible) ============ -->
+            <!-- Today's date, always shown under the buttons at the top of the open notch -->
+            <TextBlock x:Name="DateText" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20,34,20,0"
+                       Foreground="White" FontSize="13" FontWeight="SemiBold" Opacity="0" IsHitTestVisible="False"/>
+
             <StackPanel x:Name="StatusBar" Orientation="Horizontal" Height="34" Margin="0,0,16,0"
                         HorizontalAlignment="Right" VerticalAlignment="Top">
                 <!-- Privacy dots: camera (green) and microphone (orange) in use -->
@@ -389,7 +393,7 @@
             </Grid>
 
             <!-- ============ Open notch: content ============ -->
-            <Grid x:Name="ExpandedView" Opacity="0" IsHitTestVisible="False" Margin="18,40,18,16"
+            <Grid x:Name="ExpandedView" Opacity="0" IsHitTestVisible="False" Margin="18,60,18,16"
                   VerticalAlignment="Top">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>  <!-- 0: tool panel (timer / clipboard) -->
@@ -397,7 +401,7 @@
                     <RowDefinition Height="Auto"/>  <!-- 2: progress bar -->
                     <RowDefinition Height="Auto"/>  <!-- 3: quick actions -->
                     <RowDefinition Height="Auto"/>  <!-- 4: shelf -->
-                    <RowDefinition Height="Auto"/>  <!-- 5: date (when nothing else to show) -->
+                    <RowDefinition Height="Auto"/>  <!-- 5: (spare) -->
                     <RowDefinition Height="Auto"/>  <!-- 6: system stats -->
                 </Grid.RowDefinitions>
 
@@ -772,9 +776,6 @@
                         <TextBlock x:Name="NetText" Foreground="#DDDDDD" FontSize="12" Typography.NumeralAlignment="Tabular"/>
                     </StackPanel>
                 </StackPanel>
-
-                <TextBlock x:Name="DateText" Grid.Row="5" Foreground="White" FontSize="15" FontWeight="SemiBold"
-                           Margin="2,0,0,0" Visibility="Collapsed"/>
             </Grid>
 
         </Grid>
