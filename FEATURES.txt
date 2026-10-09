@@ -32,6 +32,9 @@ NOW PLAYING
 - Animated sound bars while music plays
 - Briefly pops open when the song changes (optional)
 - Hides itself when nothing is playing (or turn it off completely)
+- Music mode: the music button (or clicking the album art) turns the notch into
+  big music controls - artwork, song / artist / album, shuffle, repeat,
+  volume slider, and switching between apps that are playing
 
 
 POP-UPS (DYNAMIC ISLAND STYLE)
@@ -57,6 +60,8 @@ SHELF
 - Image actions (right-click an image): convert to PNG, convert to JPG,
   resize to a set width, compress, copy image
   (resize width, JPG quality and where new files are saved are all adjustable)
+- Batch actions for everything on the shelf: rename all with a name and number
+  (Holiday 01, Holiday 02...), convert / resize / compress all images at once
 
 
 QUICK ACTIONS FOR YOUR APPS
@@ -78,9 +83,17 @@ When one of these apps is in front, the open notch shows shortcut buttons for it
 
 TOOLS (BUTTONS ALONG THE TOP OF THE OPEN NOTCH)
 -----------------------------------------------
-- Choose which buttons show and in what order (drag them in Settings)
+- Choose which buttons show and in what order (drag them in Settings);
+  buttons that don't fit go in a "More" menu
 - Clean up: clears temp files, crash dumps and browser caches
 - Screenshot to shelf: Snipping Tool or ShareX (Ctrl+PrintScreen)
+- Copy text from the screen: snip any area and its text is copied
+  (Windows' built-in text recognition, works offline)
+- Screen recording: drag an area (or click for the whole screen), records an
+  MP4 to the shelf; red dot and timer on the notch while recording
+- Volume for each app: a slider and mute button for every app making sound
+- Command bar (Ctrl+Alt+Space, or the search button): find and open apps, files,
+  folders and your own scripts; also does sums, Ask Claude and web search
 - Colour picker: click anywhere on screen to copy its colour
 - Timer, stopwatch and Pomodoro (with a chime when time is up)
 - Clipboard history: click anything you copied earlier to copy it again
@@ -132,6 +145,14 @@ HANDHELD MODE (ROG Ally / Ally X, ROG Xbox Ally, Steam Deck, Legion Go, MSI Claw
   60 Hz + Efficiency on battery
 - Per-game profiles (remembers refresh rate and power mode for each game)
 - Play session stats
+
+
+PROTECTION & POWER
+------------------
+- Quit protection: hold Alt+F4 / Ctrl+Q (optionally Ctrl+W) to close - a quick
+  press does nothing. Hold time and which apps are protected are adjustable
+- Keep awake while chosen apps are open (OBS, games, video players...),
+  optionally keeping the screen on too
 
 
 UPDATES
