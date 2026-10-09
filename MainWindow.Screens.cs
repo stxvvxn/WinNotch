@@ -1,6 +1,9 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace WinNotch;
@@ -36,6 +39,10 @@ public partial class MainWindow
         // Re-centre when the resolution, monitor layout or scaling changes
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += (_, _) => Dispatcher.InvokeAsync(PositionWindow);
         DpiChanged += (_, _) => Dispatcher.InvokeAsync(PositionWindow, DispatcherPriority.Background);
+
+        // Hover labels (tooltips) are little windows of their own: keep them above the notch
+        EventManager.RegisterClassHandler(typeof(ToolTip), ToolTip.OpenedEvent, new RoutedEventHandler(OnToolTipOpened));
+        EventManager.RegisterClassHandler(typeof(ToolTip), ToolTip.ClosedEvent, new RoutedEventHandler(OnToolTipClosed));
 
         _screenTimer.Tick += (_, _) =>
         {
@@ -77,6 +84,34 @@ public partial class MainWindow
         if (_menuOpen) return; // don't jump above a right-click menu that's showing
         const uint SWP_NOSIZE = 0x0001, SWP_NOMOVE = 0x0002, SWP_NOACTIVATE = 0x0010, SWP_NOOWNERZORDER = 0x0200;
         SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+        if (_openToolTip != null) RaisePopup(_openToolTip); // and put a hover label back on top of it
+    }
+
+    // ---------- Hover labels ----------
+
+    private ToolTip? _openToolTip;
+
+    private void OnToolTipOpened(object sender, RoutedEventArgs e)
+    {
+        // Only the notch's own labels (bubbles, toggles, tiles...), not the Settings window's
+        if (sender is not ToolTip tip || tip.PlacementTarget is not DependencyObject target || Window.GetWindow(target) != this) return;
+        _openToolTip = tip;
+        RaisePopup(tip);
+        Dispatcher.BeginInvoke(new Action(() => { if (ReferenceEquals(_openToolTip, tip)) RaisePopup(tip); }), DispatcherPriority.Loaded);
+    }
+
+    private void OnToolTipClosed(object sender, RoutedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _openToolTip)) _openToolTip = null;
+    }
+
+    private static void RaisePopup(Visual popupContent)
+    {
+        if (PresentationSource.FromVisual(popupContent) is HwndSource source)
+        {
+            const uint SWP_NOSIZE = 0x0001, SWP_NOMOVE = 0x0002, SWP_NOACTIVATE = 0x0010;
+            SetWindowPos(source.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+        }
     }
 
     private delegate void WinEventDelegate(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time);
