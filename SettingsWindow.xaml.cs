@@ -17,6 +17,7 @@ public partial class SettingsWindow : Window
         MaxHeight = SystemParameters.WorkArea.Height - 40;
         LoadValues();
         _loading = false;
+        Loaded += async (_, _) => await LoadReleaseNotesAsync();
     }
 
     private void LoadValues()

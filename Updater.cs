@@ -6,6 +6,12 @@ using System.Text.Json;
 
 namespace WinNotch;
 
+/// <summary>One published version, for the release notes in Settings → About.</summary>
+public sealed record ReleaseInfo(string Tag, string Notes, DateTime Published, string PageUrl)
+{
+    public Version Version => Updater.TryParseVersion(Tag, out var v) ? v : new Version(0, 0, 0);
+}
+
 /// <summary>A newer WinNotch found on GitHub.</summary>
 public sealed record UpdateInfo(Version Version, string Tag, string Notes, string DownloadUrl, string PageUrl);
 
@@ -63,6 +69,63 @@ public static class Updater
         string notes = root.TryGetProperty("body", out var body) ? body.GetString() ?? "" : "";
         string page = root.TryGetProperty("html_url", out var html) ? html.GetString() ?? "" : "";
         return new UpdateInfo(latest, tag, notes, url, page);
+    }
+
+    /// <summary>Every release on GitHub, newest first (saved on the PC so they still show offline).</summary>
+    public static async Task<(List<ReleaseInfo> Releases, bool FromCache)> GetReleasesAsync(string repo)
+    {
+        string cache = Path.Combine(AppSettings.Folder, "releases.json");
+        try
+        {
+            var all = new List<ReleaseInfo>();
+            for (int page = 1; page <= 5; page++)
+            {
+                string json = await Http.GetStringAsync($"https://api.github.com/repos/{repo.Trim().Trim('/')}/releases?per_page=100&page={page}");
+                using var doc = JsonDocument.Parse(json);
+                int count = 0;
+                foreach (var r in doc.RootElement.EnumerateArray())
+                {
+                    count++;
+                    if (r.TryGetProperty("draft", out var draft) && draft.GetBoolean()) continue;
+                    string tag = r.GetProperty("tag_name").GetString() ?? "";
+                    string notes = r.TryGetProperty("body", out var body) ? body.GetString() ?? "" : "";
+                    DateTime published = r.TryGetProperty("published_at", out var p) && p.ValueKind == JsonValueKind.String
+                        ? p.GetDateTime().ToLocalTime() : DateTime.MinValue;
+                    string pageUrl = r.TryGetProperty("html_url", out var html) ? html.GetString() ?? "" : "";
+                    all.Add(new ReleaseInfo(tag, CleanNotes(notes), published, pageUrl));
+                }
+                if (count < 100) break;
+            }
+            all = all.OrderByDescending(r => r.Version).ThenByDescending(r => r.Published).ToList();
+            try
+            {
+                Directory.CreateDirectory(AppSettings.Folder);
+                File.WriteAllText(cache, JsonSerializer.Serialize(all));
+            }
+            catch { }
+            return (all, false);
+        }
+        catch
+        {
+            try
+            {
+                if (File.Exists(cache))
+                    return (JsonSerializer.Deserialize<List<ReleaseInfo>>(File.ReadAllText(cache)) ?? new(), true);
+            }
+            catch { }
+            throw;
+        }
+    }
+
+    /// <summary>Drops the behind-the-scenes lines (co-author / session links) from a release's notes.</summary>
+    private static string CleanNotes(string notes)
+    {
+        var lines = notes.Replace("\r\n", "\n").Split('\n')
+            .Where(l => !l.StartsWith("Co-Authored-By:", StringComparison.OrdinalIgnoreCase)
+                     && !l.StartsWith("Claude-Session:", StringComparison.OrdinalIgnoreCase)
+                     && !l.StartsWith("Signed-off-by:", StringComparison.OrdinalIgnoreCase)
+                     && !l.Contains("Generated with [Claude Code]"));
+        return string.Join("\n", lines).Trim();
     }
 
     public static bool TryParseVersion(string tag, out Version version)
