@@ -89,6 +89,30 @@ public sealed class AppSettings
     public bool StatsRam { get; set; } = true;
     public bool StatsNet { get; set; } = true;
 
+    // Quit protection: hold Alt+F4 / Ctrl+Q (and optionally Ctrl+W) to close
+    public bool QuitProtection { get; set; } = true;
+    public bool QuitProtectCtrlW { get; set; } = false;
+    public int QuitHoldMs { get; set; } = 700;
+    public string QuitOnlyApps { get; set; } = "";    // empty = every app
+    public string QuitIgnoreApps { get; set; } = "";
+
+    // Keep the PC awake while these apps are open (process names, comma separated)
+    public string StayAwakeApps { get; set; } = "";
+    public bool StayAwakeScreenOn { get; set; } = true;
+
+    // Command bar
+    public string SearchHotkey { get; set; } = "Ctrl+Alt+Space";
+    public List<string> SearchFolders { get; set; } = new()
+    {
+        Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
+    };
+
+    // Screen recording
+    public int RecordFps { get; set; } = 30;
+    public bool RecordCursor { get; set; } = true;
+
     // Updates (new versions come from GitHub releases)
     public bool AutoUpdate { get; set; } = true;
     public string UpdateRepo { get; set; } = "stxvvxn/WinNotch";
@@ -252,13 +276,18 @@ public sealed class TopButtonSetting
     {
         ("clean", "\uE74D", "Clean up"),
         ("timer", "\uE916", "Timer"),
+        ("music", "\uE8D6", "Music controls"),
         ("clipboard", "\uE77F", "Clipboard history"),
         ("colour", "\uE790", "Colour picker"),
         ("screenshot", "\uE722", "Screenshot to shelf"),
+        ("ocr", "\uE8C8", "Copy text from screen"),
+        ("record", "\uE7C8", "Record the screen"),
         ("claude", "\uE8BD", "Claude"),
         ("mic", "\uE720", "Mic mute"),
         ("notes", "\uE70B", "Quick notes"),
         ("calc", "\uE8EF", "Calculator"),
+        ("mixer", "\uE9E9", "Volume for each app"),
+        ("search", "\uE721", "Search (command bar)"),
     };
 
     /// <summary>Fills in the list the first time (keeping the old show/hide choices) and adds any new buttons.</summary>

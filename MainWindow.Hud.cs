@@ -153,6 +153,7 @@ public partial class MainWindow
             bool changed = _lastVolume >= 0 && (Math.Abs(level - _lastVolume) > 0.001f || mute != _lastMute);
             _lastVolume = level;
             _lastMute = mute;
+            if (changed) UpdateMusicVolume();
 
             if (changed && _settings.VolumePopup)
             {

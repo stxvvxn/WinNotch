@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -298,29 +299,83 @@ public partial class MainWindow
 
     // ================= Buttons along the top =================
 
+    private bool _statusSizeHooked;
+
     private void ApplyTopButtons()
     {
-        var buttons = TopButtonsPanel.Children.OfType<FrameworkElement>().ToList();
+        if (!_statusSizeHooked)
+        {
+            _statusSizeHooked = true;
+            // The clock / battery area changes width (e.g. a mic icon appears): re-check what fits
+            StatusBar.SizeChanged += (_, e) =>
+            {
+                if (Math.Abs(e.NewSize.Width - e.PreviousSize.Width) > 8) ApplyTopButtons();
+            };
+        }
+
+        // Gather every tool button, wherever it is now (along the top or in "More")
+        var all = TopButtonsPanel.Children.OfType<Button>().Concat(MoreButtons.Children.OfType<Button>()).ToList();
         TopButtonsPanel.Children.Clear();
+        MoreButtons.Children.Clear();
+        var more = all.First(b => Equals(b.Tag, "more"));
+
+        var ordered = new List<Button>();
         foreach (var setting in _settings.TopButtons)
         {
-            var b = buttons.FirstOrDefault(x => Equals(x.Tag, setting.Key));
+            var b = all.FirstOrDefault(x => Equals(x.Tag, setting.Key));
             if (b == null) continue;
-            buttons.Remove(b);
             b.Visibility = Vis(setting.Shown);
-            TopButtonsPanel.Children.Add(b);
+            ordered.Add(b);
         }
-        foreach (var leftover in buttons) TopButtonsPanel.Children.Add(leftover); // anything not in the list
+        ordered.AddRange(all.Where(b => b != more && !ordered.Contains(b)));
+
+        // How many fit between the left edge and the clock / battery on the right
+        double status = Math.Max(StatusBar.ActualWidth, 120) + 16;
+        int fit = Math.Max(3, (int)((ExpandedW - 12 - status) / 26));
+        var shown = ordered.Where(b => b.Visibility == Visibility.Visible).ToList();
+        bool overflow = shown.Count > fit;
+        int keep = overflow ? fit - 1 : fit; // leave room for the "more" button
+
+        int n = 0;
+        foreach (var b in ordered)
+        {
+            bool onTop = b.Visibility != Visibility.Visible || n < keep;
+            if (b.Visibility == Visibility.Visible) n++;
+            if (onTop)
+            {
+                b.ClearValue(WidthProperty);
+                b.ClearValue(HeightProperty);
+                b.ClearValue(MarginProperty);
+                TopButtonsPanel.Children.Add(b);
+            }
+            else
+            {
+                // Bigger targets in the "More" panel
+                b.Width = 40;
+                b.Height = 36;
+                b.Margin = new Thickness(0, 0, 4, 4);
+                MoreButtons.Children.Add(b);
+            }
+        }
+        more.Visibility = Vis(overflow);
+        TopButtonsPanel.Children.Add(more);
 
         // A hidden tool shouldn't stay open
-        if (_openTool != null && !_settings.TopButtonShown(_openTool))
+        if (_openTool != null && _openTool != "more" && !_settings.TopButtonShown(_openTool))
+        {
+            _openTool = null;
+            RefreshSections();
+        }
+        if (_openTool == "more" && !overflow)
         {
             _openTool = null;
             RefreshSections();
         }
 
         // Keep the message at the top clear of the buttons
-        int shown = TopButtonsPanel.Children.OfType<FrameworkElement>().Count(x => x.Visibility == Visibility.Visible);
-        TopMessage.Margin = new Thickness(12 + shown * 26 + 10, 0, 120, 0);
+        int onBar = TopButtonsPanel.Children.OfType<FrameworkElement>().Count(x => x.Visibility == Visibility.Visible);
+        TopMessage.Margin = new Thickness(12 + onBar * 26 + 10, 0, 120, 0);
     }
+
+    private void MoreToolButton_Click(object sender, RoutedEventArgs e) => ToggleTool("more");
 }

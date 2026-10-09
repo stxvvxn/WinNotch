@@ -62,6 +62,21 @@ public partial class SettingsWindow : Window
         BubblesBox.IsChecked = s.ShowBubbles;
         DrawBubblePreview();
 
+        // Quit protection and keep awake
+        QuitProtectBox.IsChecked = s.QuitProtection;
+        QuitCtrlWBox.IsChecked = s.QuitProtectCtrlW;
+        if (!SelectByTag(QuitHoldBox, s.QuitHoldMs.ToString())) QuitHoldBox.SelectedIndex = 1;
+        QuitOnlyBox.Text = s.QuitOnlyApps;
+        QuitIgnoreBox.Text = s.QuitIgnoreApps;
+        AwakeAppsBox.Text = s.StayAwakeApps;
+        AwakeScreenBox.IsChecked = s.StayAwakeScreenOn;
+
+        // Command bar and recording
+        SearchHotkeyBox.Text = s.SearchHotkey;
+        SearchFoldersBox.Text = string.Join(Environment.NewLine, s.SearchFolders);
+        if (!SelectByTag(RecordFpsBox, s.RecordFps.ToString())) RecordFpsBox.SelectedIndex = 1;
+        RecordCursorBox.IsChecked = s.RecordCursor;
+
         // Updates
         AutoUpdateBox.IsChecked = s.AutoUpdate;
         UpdateRepoBox.Text = s.UpdateRepo;
@@ -160,6 +175,25 @@ public partial class SettingsWindow : Window
         s.TimerSound = TimerSoundBox.IsChecked == true;
         s.ScreenshotMethod = SelectedTag(ScreenshotBox) ?? "snipping";
         s.ShowBubbles = BubblesBox.IsChecked == true;
+
+        // Quit protection and keep awake
+        s.QuitProtection = QuitProtectBox.IsChecked == true;
+        s.QuitProtectCtrlW = QuitCtrlWBox.IsChecked == true;
+        QuitCtrlWBox.IsEnabled = s.QuitProtection;
+        if (int.TryParse(SelectedTag(QuitHoldBox), out int hold)) s.QuitHoldMs = hold;
+        s.QuitOnlyApps = QuitOnlyBox.Text.Trim();
+        s.QuitIgnoreApps = QuitIgnoreBox.Text.Trim();
+        s.StayAwakeApps = AwakeAppsBox.Text.Trim();
+        s.StayAwakeScreenOn = AwakeScreenBox.IsChecked == true;
+
+        // Command bar and recording
+        string searchKey = SearchHotkeyBox.Text.Trim();
+        if (searchKey.Length == 0 || KeySender.TryParseHotkey(searchKey, out _, out _)) s.SearchHotkey = searchKey;
+        SearchHotkeyBox.Text = s.SearchHotkey;
+        s.SearchFolders = SearchFoldersBox.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                               .Select(f => f.Trim('"')).Where(f => f.Length > 0).ToList();
+        if (int.TryParse(SelectedTag(RecordFpsBox), out int fps)) s.RecordFps = fps;
+        s.RecordCursor = RecordCursorBox.IsChecked == true;
 
         // Updates
         s.AutoUpdate = AutoUpdateBox.IsChecked == true;
@@ -352,6 +386,46 @@ public partial class SettingsWindow : Window
         CheckUpdatesButton.IsEnabled = false;
         try { await _owner.CheckForUpdatesAsync(manual: true); }
         finally { CheckUpdatesButton.IsEnabled = true; }
+    }
+
+    // ---------- Keep awake: add an app that's open now ----------
+
+    private void AwakeAddBox_DropDownOpened(object? sender, EventArgs e)
+    {
+        var names = System.Diagnostics.Process.GetProcesses()
+            .Where(p => { try { return p.MainWindowHandle != IntPtr.Zero; } catch { return false; } })
+            .Select(p => p.ProcessName)
+            .Where(n => !n.Equals("WinNotch", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        AwakeAddBox.Items.Clear();
+        foreach (var n in names) AwakeAddBox.Items.Add(n);
+    }
+
+    private void AwakeAddBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || AwakeAddBox.SelectedItem is not string name) return;
+        var list = AwakeAppsBox.Text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        if (!list.Contains(name, StringComparer.OrdinalIgnoreCase)) list.Add(name);
+        AwakeAppsBox.Text = string.Join(", ", list);
+        AwakeAddBox.SelectedItem = null;
+        Changed(sender, e);
+    }
+
+    private void OpenScripts_Click(object sender, RoutedEventArgs e) => OpenFolder(MainWindow.ScriptsFolder);
+
+    private void OpenRecordings_Click(object sender, RoutedEventArgs e) =>
+        OpenFolder(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "WinNotch Recordings"));
+
+    private static void OpenFolder(string folder)
+    {
+        try
+        {
+            System.IO.Directory.CreateDirectory(folder);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder) { UseShellExecute = true });
+        }
+        catch { }
     }
 
     private void EditActions_Click(object sender, RoutedEventArgs e) => _owner.OpenActionsFile();

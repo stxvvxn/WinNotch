@@ -24,6 +24,9 @@ public partial class MainWindow
         foreach (var old in menu.Items.OfType<FrameworkElement>().Where(x => Equals(x.Tag, "image")).ToList())
             menu.Items.Remove(old);
 
+        // Whole-shelf actions (rename all, convert all images...) go at the bottom
+        AddBatchItems(menu);
+
         if (!_settings.ImageActions || !IsImage(item.FullPath)) return;
 
         int at = 0;

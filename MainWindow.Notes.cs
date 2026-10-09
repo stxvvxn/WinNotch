@@ -18,7 +18,7 @@ public partial class MainWindow
     private int _calcVersion;
     private string _calcLastResult = "";
 
-    private bool TextEntryActive => NotesBox.IsKeyboardFocusWithin || CalcBox.IsKeyboardFocusWithin;
+    private bool TextEntryActive => NotesBox.IsKeyboardFocusWithin || CalcBox.IsKeyboardFocusWithin || SearchBox.IsKeyboardFocusWithin;
 
     // ---------- Shared bits ----------
 

@@ -421,11 +421,10 @@ public partial class MainWindow
 
     private void SetKeepAwake(bool on, bool announce)
     {
-        const uint ES_CONTINUOUS = 0x80000000, ES_SYSTEM_REQUIRED = 0x00000001;
         _keepAwake = on;
         _sawDownload = false;
         _quietSince = null;
-        SetThreadExecutionState(on ? ES_CONTINUOUS | ES_SYSTEM_REQUIRED : ES_CONTINUOUS);
+        ApplyExecutionState();
         UpdateKeepAwakeButton();
         UpdateAllyInfoLine();
         if (announce)

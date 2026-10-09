@@ -208,6 +208,52 @@
                             </StackPanel>
                         </Border>
 
+                        <TextBlock Text="QUIT PROTECTION" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="QuitProtectBox" Content="Hold Alt+F4 or Ctrl+Q to close (a quick press does nothing)" Click="Changed"/>
+                                <CheckBox x:Name="QuitCtrlWBox" Content="Also protect Ctrl+W (closing a tab or window)" Margin="22,5,0,5" Click="Changed"/>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Hold for" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="QuitHoldBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="Half a second" Tag="500"/>
+                                        <ComboBoxItem Content="0.7 seconds" Tag="700"/>
+                                        <ComboBoxItem Content="1 second" Tag="1000"/>
+                                        <ComboBoxItem Content="1.5 seconds" Tag="1500"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Only these apps" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="QuitOnlyBox" Style="{StaticResource Field}" Width="260" HorizontalAlignment="Right"
+                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. chrome, photoshop, winword — leave empty for every app"/>
+                                </DockPanel>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Never these apps" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="QuitIgnoreBox" Style="{StaticResource Field}" Width="260" HorizontalAlignment="Right"
+                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. notepad, calc"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,6"
+                                           Text="App names as in Task Manager → Details, without .exe, separated by commas. Leave 'Only these apps' empty to protect everything."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="KEEP AWAKE" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Don't sleep while these apps are open" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="AwakeAddBox" Width="150" DockPanel.Dock="Right" Margin="8,5,0,5"
+                                              DropDownOpened="AwakeAddBox_DropDownOpened" SelectionChanged="AwakeAddBox_SelectionChanged"
+                                              ToolTip="Add an app that's open right now"/>
+                                    <TextBox x:Name="AwakeAppsBox" Style="{StaticResource Field}" LostFocus="Changed" KeyDown="Field_KeyDown"
+                                             ToolTip="e.g. obs64, vlc, steam"/>
+                                </DockPanel>
+                                <CheckBox x:Name="AwakeScreenBox" Content="Keep the screen on too" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
+                                           Text="Pick from the list to add an app that's running now, or type names separated by commas."/>
+                            </StackPanel>
+                        </Border>
+
                         <TextBlock Text="UPDATES" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
@@ -452,6 +498,51 @@
                                     <ComboBoxItem Content="ShareX (Ctrl+PrintScreen)" Tag="sharex"/>
                                 </ComboBox>
                             </Grid>
+                        </Border>
+
+                        <TextBlock Text="COMMAND BAR (SEARCH)" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Shortcut (works everywhere)" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="SearchHotkeyBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
+                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. Ctrl+Alt+Space — leave empty for none"/>
+                                </DockPanel>
+                                <TextBlock Text="Search files and folders in (one per line)" Margin="0,6,0,2"/>
+                                <TextBox x:Name="SearchFoldersBox" Style="{StaticResource Field}" AcceptsReturn="True" Height="70"
+                                         VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" LostFocus="Changed"/>
+                                <DockPanel Margin="0,4,0,4">
+                                    <Button Content="Open scripts folder" Click="OpenScripts_Click" DockPanel.Dock="Right" Padding="12,4"/>
+                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,0,12,0"
+                                               Text="Finds apps, files, folders and your scripts (.bat, .ps1, .exe, shortcuts…). Also does sums, and offers Ask Claude and web search."/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="SCREEN RECORDING" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Frames per second" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="RecordFpsBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="15 (smaller files)" Tag="15"/>
+                                        <ComboBoxItem Content="30" Tag="30"/>
+                                        <ComboBoxItem Content="60 (smooth)" Tag="60"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <CheckBox x:Name="RecordCursorBox" Content="Show the mouse pointer" Click="Changed"/>
+                                <DockPanel Margin="0,4,0,4">
+                                    <Button Content="Open recordings" Click="OpenRecordings_Click" DockPanel.Dock="Right" Padding="12,4"/>
+                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,0,12,0"
+                                               Text="MP4 video (no sound), saved to Videos\WinNotch Recordings and added to the shelf. Press the record button again to stop."/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="COPY TEXT FROM SCREEN" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,4"
+                                       Text="Snip any area and its text is copied. Uses the text recognition built into Windows, so it works offline in your Windows display languages."/>
                         </Border>
 
                         <TextBlock Text="MICROPHONE MUTE" Style="{StaticResource Heading}"/>

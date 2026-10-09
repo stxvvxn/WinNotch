@@ -87,6 +87,9 @@ public partial class MainWindow
                     return;
                 }
 
+                // A snip for "copy text from screen"
+                if (HandleOcrSnip(data)) return;
+
                 // A screenshot from Win+Shift+S, PrintScreen, ShareX...: pop-up (and shelf)
                 if (IsScreenshotOnClipboard(data))
                 {

@@ -118,6 +118,8 @@ public partial class MainWindow : Window
             StopClipboard();
             DisposeTray();
             StopAllyMode();
+            StopQuitGuard();
+            _recorder?.Stop();
             _brightnessWatcher?.Stop();
         };
     }
@@ -156,6 +158,9 @@ public partial class MainWindow : Window
         ApplyExtras();
         BuildBubbles();
         ApplyTopButtons();
+        ApplyQuitGuard();
+        ApplyAwakeApps();
+        ApplySearch();
         ApplyScreenshotWatch();
         InitUpdates();
     }
@@ -429,7 +434,7 @@ public partial class MainWindow : Window
         bool tool = _openTool != null;
 
         MediaRow.Visibility = Vis(!tool && MediaShown);
-        ProgressRow.Visibility = Vis(!tool && MediaShown);
+        ProgressRow.Visibility = Vis((!tool && MediaShown) || _openTool == "music");
         ActionsPanel.Visibility = Vis(!tool && _actionsWanted);
         ShelfArea.Visibility = Vis(!tool && ShelfVisible);
         TimerPanel.Visibility = Vis(_openTool == "timer");
@@ -445,6 +450,14 @@ public partial class MainWindow : Window
         ClaudeToolButton.Foreground = _openTool == "claude" ? AccentOrange : Brushes.White;
         NotesToolButton.Foreground = _openTool == "notes" ? AccentOrange : Brushes.White;
         CalcToolButton.Foreground = _openTool == "calc" ? AccentOrange : Brushes.White;
+        MorePanel.Visibility = Vis(_openTool == "more");
+        MusicPanel.Visibility = Vis(_openTool == "music");
+        MixerPanel.Visibility = Vis(_openTool == "mixer");
+        SearchPanel.Visibility = Vis(_openTool == "search");
+        foreach (var (button, key) in new[] { (MusicToolButton, "music"), (MixerToolButton, "mixer"), (SearchToolButton, "search"), (MoreToolButton, "more") })
+            button.Foreground = _openTool == key ? AccentOrange : Brushes.White;
+        if (_openTool == "music") RefreshMusicPanel();
+        if (_openTool == "mixer") RefreshMixer();
         NotesPanel.Visibility = Vis(_openTool == "notes");
         CalcPanel.Visibility = Vis(_openTool == "calc");
         StatsRow.Visibility = Vis(!tool && _settings.ShowStats);
@@ -485,7 +498,18 @@ public partial class MainWindow : Window
         try
         {
             _manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-            _manager.CurrentSessionChanged += (_, _) => Dispatcher.InvokeAsync(AttachSession);
+            _manager.CurrentSessionChanged += (_, _) => Dispatcher.InvokeAsync(() =>
+            {
+                // Something else started playing: stop following the app picked in the switcher if it's paused
+                try
+                {
+                    if (_pinnedSessionId != null && _session?.GetPlaybackInfo()?.PlaybackStatus
+                        != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                        _pinnedSessionId = null;
+                }
+                catch { _pinnedSessionId = null; }
+                AttachSession();
+            });
             AttachSession();
         }
         catch
@@ -503,7 +527,7 @@ public partial class MainWindow : Window
             _session.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
         }
 
-        _session = _manager?.GetCurrentSession();
+        _session = PickSession();
 
         if (_session != null)
         {
@@ -540,6 +564,7 @@ public partial class MainWindow : Window
             var props = await _session.TryGetMediaPropertiesAsync();
             string title = string.IsNullOrWhiteSpace(props.Title) ? "Unknown title" : props.Title;
             string artist = props.Artist ?? "";
+            string album = props.AlbumTitle ?? "";
 
             BitmapImage? art = props.Thumbnail != null ? await LoadThumbnailAsync(props.Thumbnail) : null;
 
@@ -547,7 +572,9 @@ public partial class MainWindow : Window
             {
                 TitleText.Text = title;
                 ArtistText.Text = artist;
+                _album = album;
                 SetArtwork(art);
+                RefreshMusicPanel();
 
                 string trackKey = title + "|" + artist;
                 if (allowPeek && trackKey != _lastTrack && _settings.ShowNowPlaying) Peek();
@@ -606,6 +633,7 @@ public partial class MainWindow : Window
     {
         TitleText.Text = "Nothing playing";
         ArtistText.Text = "";
+        _album = "";
         SetArtwork(null);
         PlayPauseButton.Content = "";
         _lastTrack = "";
@@ -619,6 +647,7 @@ public partial class MainWindow : Window
         PlayPauseButton.Content = playing ? "" : ""; // pause : play icon
         SetPlayingForTimeline(playing);
         UpdateSoundBars();
+        RefreshMusicPanel();
     }
 
     private async void Prev_Click(object sender, RoutedEventArgs e)

@@ -277,6 +277,14 @@
                                Margin="5,0,0,0" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
                 </StackPanel>
 
+                <!-- Screen recording in progress (click the notch to stop) -->
+                <StackPanel x:Name="CompactRec" Orientation="Horizontal" Margin="2,0,0,0"
+                            VerticalAlignment="Center" Visibility="Collapsed">
+                    <Ellipse x:Name="CompactRecDot" Width="9" Height="9" Fill="#FF453A" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CompactRecText" Text="0:00" FontSize="12" FontWeight="SemiBold" Foreground="White"
+                               Margin="6,0,0,0" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                </StackPanel>
+
                 <!-- Running timer -->
                 <StackPanel x:Name="CompactTimer" Orientation="Horizontal" Margin="2,0,0,0"
                             VerticalAlignment="Center" Visibility="Collapsed">
@@ -315,8 +323,21 @@
                             ToolTip="Mute / unmute your microphone (every app)" Click="MicToolButton_Click"/>
                     <Button x:Name="NotesToolButton" Tag="notes" Style="{StaticResource ToolButton}" Content="&#xE70B;"
                             ToolTip="Quick notes" Click="NotesToolButton_Click"/>
+                    <Button x:Name="MusicToolButton" Tag="music" Style="{StaticResource ToolButton}" Content="&#xE8D6;"
+                            ToolTip="Music controls" Click="MusicToolButton_Click"/>
+                    <Button x:Name="MixerToolButton" Tag="mixer" Style="{StaticResource ToolButton}" Content="&#xE9E9;"
+                            ToolTip="Volume for each app" Click="MixerToolButton_Click"/>
+                    <Button x:Name="SearchToolButton" Tag="search" Style="{StaticResource ToolButton}" Content="&#xE721;"
+                            ToolTip="Search apps, files and scripts" Click="SearchToolButton_Click"/>
+                    <Button x:Name="OcrToolButton" Tag="ocr" Style="{StaticResource ToolButton}" Content="&#xE8C8;"
+                            ToolTip="Copy text from the screen" Click="OcrTool_Click"/>
+                    <Button x:Name="RecordToolButton" Tag="record" Style="{StaticResource ToolButton}" Content="&#xE7C8;"
+                            ToolTip="Record the screen (MP4 to the shelf)" Click="RecordTool_Click"/>
                     <Button x:Name="CalcToolButton" Tag="calc" Style="{StaticResource ToolButton}" Content="&#xE8EF;"
                             ToolTip="Calculator and converter" Click="CalcToolButton_Click"/>
+                    <!-- Shown when there are more buttons than fit; opens the rest -->
+                    <Button x:Name="MoreToolButton" Tag="more" Style="{StaticResource ToolButton}" Content="&#xE712;"
+                            ToolTip="More tools" Click="MoreToolButton_Click" Visibility="Collapsed"/>
                 </StackPanel>
                 <TextBlock x:Name="TopMessage" Foreground="#A0A0A0" FontSize="11" Margin="250,0,120,0"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -554,6 +575,80 @@
                 </StackPanel>
 
                 <!-- == Clipboard history == -->
+                <!-- == Tools that didn't fit along the top == -->
+                <StackPanel x:Name="MorePanel" Grid.Row="0" Visibility="Collapsed" Margin="0,2,0,0">
+                    <TextBlock Text="MORE TOOLS" Foreground="#888888" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,6"/>
+                    <WrapPanel x:Name="MoreButtons"/>
+                </StackPanel>
+
+                <!-- == Music: big controls for what's playing == -->
+                <StackPanel x:Name="MusicPanel" Grid.Row="0" Visibility="Collapsed" Margin="0,2,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="MusicArt" Width="112" Height="112" CornerRadius="14" Background="#1F1F1F">
+                            <TextBlock x:Name="MusicArtPlaceholder" Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="38" Foreground="#666666" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="16,2,0,0" VerticalAlignment="Center">
+                            <Button x:Name="MusicSourceButton" Style="{StaticResource ChipButton}" HorizontalAlignment="Left"
+                                    Margin="0,0,0,8" Click="MusicSource_Click" ToolTip="Switch between apps playing media">
+                                <TextBlock x:Name="MusicSourceText" Text="No app" FontSize="10" Foreground="#BBBBBB"/>
+                            </Button>
+                            <TextBlock x:Name="MusicTitle" Text="Nothing playing" Foreground="White" FontSize="17"
+                                       FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="46" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="MusicArtist" Foreground="#B0B0B0" FontSize="13" Margin="0,3,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="MusicAlbum" Foreground="#777777" FontSize="12" Margin="0,2,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </Grid>
+                    <DockPanel Margin="0,12,0,0" LastChildFill="False">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <Button x:Name="ShuffleButton" Style="{StaticResource IconButton}" Content="&#xE8B1;" FontSize="14"
+                                    ToolTip="Shuffle" Click="Shuffle_Click"/>
+                            <Button Style="{StaticResource IconButton}" Content="&#xE892;" ToolTip="Previous" Click="Prev_Click"/>
+                            <Button x:Name="MusicPlayButton" Style="{StaticResource IconButton}" Content="&#xE768;"
+                                    FontSize="24" Width="46" Height="46" Margin="4,0" ToolTip="Play / Pause" Click="PlayPause_Click"/>
+                            <Button Style="{StaticResource IconButton}" Content="&#xE893;" ToolTip="Next" Click="Next_Click"/>
+                            <Button x:Name="RepeatButton" Style="{StaticResource IconButton}" Content="&#xE8EE;" FontSize="14"
+                                    ToolTip="Repeat" Click="Repeat_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                            <TextBlock x:Name="MusicVolumeIcon" Text="&#xE767;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="13" Foreground="#AAAAAA" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <Slider x:Name="MusicVolume" Width="96" Minimum="0" Maximum="100" VerticalAlignment="Center"
+                                    Focusable="False" IsMoveToPointEnabled="True" ValueChanged="MusicVolume_ValueChanged"/>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+
+                <!-- == Volume for each app == -->
+                <StackPanel x:Name="MixerPanel" Grid.Row="0" Visibility="Collapsed" Margin="0,2,0,0">
+                    <TextBlock Text="VOLUME FOR EACH APP" Foreground="#888888" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,6"/>
+                    <TextBlock x:Name="MixerEmpty" Text="Nothing is making sound right now" Foreground="#777777"
+                               FontSize="12" Margin="2,4,0,6" Visibility="Collapsed"/>
+                    <StackPanel x:Name="MixerRows"/>
+                </StackPanel>
+
+                <!-- == Command bar: search apps, files, scripts == -->
+                <StackPanel x:Name="SearchPanel" Grid.Row="0" Visibility="Collapsed" Margin="0,2,0,0">
+                    <Grid>
+                        <TextBox x:Name="SearchBox" Height="34" FontSize="15"
+                                 Background="#161616" Foreground="White" CaretBrush="White" BorderBrush="#33FFFFFF"
+                                 Padding="30,4,8,4" VerticalContentAlignment="Center"
+                                 PreviewMouseDown="TextEntry_PreviewMouseDown" PreviewKeyDown="SearchBox_PreviewKeyDown"
+                                 TextChanged="SearchBox_TextChanged"/>
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13"
+                                   Foreground="#888888" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False"/>
+                    </Grid>
+                    <StackPanel x:Name="SearchResults" Margin="0,6,0,0"/>
+                    <TextBlock x:Name="SearchHint" Foreground="#666666" FontSize="10" Margin="2,6,0,0"
+                               Text="Apps, your folders and scripts · ↑↓ to choose · Enter to open · Esc to close"/>
+                </StackPanel>
+
                 <!-- == Claude buttons (always available from the top bar) == -->
                 <StackPanel x:Name="ClaudePanel" Grid.Row="0" Visibility="Collapsed" Margin="0,2,0,0">
                     <TextBlock Text="CLAUDE · Explain, Summarise and Fix use the text you last copied"
@@ -618,8 +713,9 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border x:Name="ArtBorder" Width="84" Height="84" CornerRadius="12"
-                            Background="#1F1F1F" VerticalAlignment="Bottom">
+                    <Border x:Name="ArtBorder" Width="84" Height="84" CornerRadius="12" Cursor="Hand"
+                            Background="#1F1F1F" VerticalAlignment="Bottom" ToolTip="Open music controls"
+                            MouseLeftButtonUp="ArtBorder_MouseLeftButtonUp">
                         <TextBlock x:Name="ArtPlaceholder" Text="&#xE8D6;"
                                    FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="30"
                                    Foreground="#666666"
