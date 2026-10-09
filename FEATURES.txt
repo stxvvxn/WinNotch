@@ -1,162 +1,99 @@
-WINNOTCH - FEATURE LIST
-=======================
+WINNOTCH 2 - FEATURE LIST
+=========================
 
-A MacBook-style notch / Dynamic Island for Windows. It sits at the top of your
-screen; hover over it (or tap it) to open it.
-Single portable exe, no install needed. Everything can be switched on/off in Settings.
+An Apple-style notch for Windows. It sits at the top of your screen; hover over
+it to open it. Single portable exe, no install needed. Everything can be
+switched on or off in Settings.
 
 
 THE NOTCH
 ---------
-- Small black notch at the top of the screen that expands when you hover over it
-- Clock, always visible (also when open)
-- Today's date, always shown under the buttons when the notch is open
-- Weather icon (current conditions for your location, no setup needed)
-- Battery icon, with a lightning bolt while charging
-- Camera and microphone in-use dots (like the green/orange dots on a Mac)
-- Red mic icon while your microphone is muted
-- Choose the size (small / normal / large), width (narrow / normal / wide)
-  and which screen it appears on (main, follow the mouse, or a specific display)
-- Always on top of everything, with an optional auto-hide for full screen
-  apps, games and videos
-- Start with Windows
-- Settings window with a Features tab (this list)
-- Tray icon: Settings, Hide/show the notch, Check for updates, Close
+- Closed: the date (DD/MM/YYYY) on the left, the time (24-hour) on the right
+- Hover to open: the full date (e.g. Friday 9 October 2026), a search box and
+  your home page underneath
+- Moving the mouse away, pressing Esc, or the notch hiding always takes it back
+  to the home page
+- Round page bubbles under the open notch switch between pages: home, music,
+  volume and shelf (the one you're on lights up in your accent colour)
+- Choose the size, width, style (black, graphite, glass, outline), accent
+  colour and which screen it appears on
+- Optional hide for full screen apps, games and videos
+- Start with Windows; tray icon with Settings, Hide notch, Check for updates
 
 
-NOW PLAYING
+SEARCH BOX
+----------
+- Apps and files on the PC (through the Windows Search index), with icons
+- Search the web (Google, Bing, DuckDuckGo, Brave, Ecosia or your own link)
+- Ask an AI tool (Claude, ChatGPT, Copilot, Perplexity, Gemini or your own link)
+- Enter opens, Shift+Enter searches the web, Ctrl+Enter asks the AI,
+  Esc clears and then closes; Ctrl+Alt+Space opens it from anywhere
+- Maths and conversions: type a sum (or "15% of 80", "5 miles in km") and the
+  answer appears at the top - Enter copies it
+- Reminders and timers (see below)
+
+
+HOME PAGE
+---------
+- Quote of the day
+- Weather for your town (Open-Meteo, free): temperature, conditions, high and
+  low, chance of rain - click for the full forecast
+- Your next calendar event from an Outlook, Google or iCloud calendar link,
+  including repeating meetings - "Now · until 15:30", "Today 15:00 · in 2 hr"
+- Day progress bar with the week number: your working day or the whole day
+- Quick toggles: mute mic, do not disturb, dark/light mode, Bluetooth,
+  keep the PC awake, lock the PC (they light up when on)
+- Countdown to your next reminder or timer, with a cancel button
+- System info: CPU, memory, GPU, disk, network, battery, up time - as tiles or
+  one compact line. Click the disk tile to flick between drives; the disk bar
+  turns orange at 70% full and red at 80%
+
+
+REMINDERS AND TIMERS
+--------------------
+- Type them in the search box: "remind me in 20 min to check the oven",
+  "remind me at 5pm call mum", "remind me tomorrow 9am bins"
+- Repeating: "every weekday at 9am stand-up", "every day 8pm meds",
+  "every 45 min stretch"
+- Timers: "timer 10 min", "5 minute timer for eggs"
+- Or add them in Settings → Reminders (once, daily, weekdays, weekly, every
+  few minutes/hours)
+- When one is due the notch drops open with a bell and a sound, and stays
+  until you press Done or Snooze (5 min / 1 hr; +1 / +5 min for timers)
+- The closed notch counts down to the next one ("in 12 min", or 09:59 for a
+  timer) - and to your next calendar event
+
+
+MUSIC PAGE
+----------
+- Song, artist, album and artwork from Spotify, Apple Music, YouTube Music,
+  Amazon Music, TIDAL, Deezer, browsers and more
+- Play/pause, previous, next, shuffle, repeat and a seek bar
+- Choose your music service; Spotify gets Like and Smart Shuffle buttons
+
+
+VOLUME PAGE
 -----------
-- Song, artist and album art from Spotify, browsers, Apple Music etc.
-- Play / pause, next, previous
-- Progress bar you can click to skip through the song
-- Animated sound bars while music plays
-- Briefly pops open when the song changes (optional)
-- Hides itself when nothing is playing (or turn it off completely)
-- Music mode: the music button (or clicking the album art) turns the notch into
-  big music controls - artwork, song / artist / album, shuffle, repeat,
-  volume slider, and switching between apps that are playing
+- Whole-PC volume, plus a slider and mute button for each app making sound
 
 
-POP-UPS (DYNAMIC ISLAND STYLE)
-------------------------------
-- Volume change
-- Screen brightness change (laptops)
-- Charger plugged in
-- Microphone muted / unmuted
-- Timer finished
-- Screenshot taken, with a thumbnail (Win+Shift+S, PrintScreen, Snipping Tool,
-  ShareX, Greenshot...) - and it goes straight onto the shelf
-- Battery fully charged (or reached its charge limit, e.g. 80%)
-- Battery saver turned on / off
-- Rain or snow on the way ("Rain in about 20 min"), warning 15 min - 2 hours ahead
-
-
-SHELF
------
-- Drag files onto the notch to keep them there, drag them out again to
-  copy them somewhere else
-- Remembered between restarts
-- Right-click: open, show in folder, remove
-- Image actions (right-click an image): convert to PNG, convert to JPG,
-  resize to a set width, compress, copy image
-  (resize width, JPG quality and where new files are saved are all adjustable)
-- Batch actions for everything on the shelf: rename all with a name and number
-  (Holiday 01, Holiday 02...), convert / resize / compress all images at once
-
-
-QUICK ACTIONS FOR YOUR APPS
----------------------------
-When one of these apps is in front, the open notch shows shortcut buttons for it:
-- Photoshop:     Quick Export, Export As, Save As, Transform, Fit Screen, Undo
-- CapCut:        Split, Delete, Play/Pause, Undo, Import, Export
-- Chrome / Edge: New Tab, Reopen Tab, Back, Reload, Downloads, Private
-- Firefox:       New Tab, Reopen Tab, Back, Reload, Downloads, Private
-- File Explorer: New Folder, Rename, Copy Path, Up, New Tab, Properties
-- Word:          Save As, Bold, Comment, Word Count, Track Changes, Replace
-- Outlook (classic and new): New Email, Reply, Reply All, Forward, Mark Read, Calendar
-- Discord:       Mute, Deafen, Switcher, Search, Mark Read, Upload
-- Claude:        New Chat, Explain, Summarise, Fix Writing, Code, New Task
-- Steam:         Big Picture, Library, Store, Downloads, Friends
-- Xbox app:      Game Bar, Screenshot, Record That, Record, Mic
-- Fully editable (actions.json): add your own apps, shortcuts, programs or links
-
-
-TOOLS (BUTTONS ALONG THE TOP OF THE OPEN NOTCH)
------------------------------------------------
-- Choose which buttons show and in what order (drag them in Settings);
-  buttons that don't fit go in a "More" menu
-- Clean up: clears temp files, crash dumps and browser caches
-- Screenshot to shelf: Snipping Tool or ShareX (Ctrl+PrintScreen)
-- Copy text from the screen: snip any area and its text is copied
-  (Windows' built-in text recognition, works offline)
-- Screen recording: drag an area (or click for the whole screen), records an
-  MP4 to the shelf; red dot and timer on the notch while recording
-- Volume for each app: a slider and mute button for every app making sound
-- Command bar (Ctrl+Alt+Space, or the search button): find and open apps, files,
-  folders and your own scripts; also does sums, Ask Claude and web search
-- Colour picker: click anywhere on screen to copy its colour
-- Timer, stopwatch and Pomodoro (with a chime when time is up)
-- Clipboard history: click anything you copied earlier to copy it again
-- Claude buttons: new chat, explain / summarise / fix what you last copied
-- Mic mute: mutes every microphone in Windows (Teams, Discord, Zoom, games),
-  also with a shortcut that works anywhere (Ctrl+Alt+Shift+M, changeable)
-- Quick notes: a notepad that saves as you type
-- Calculator and converter:
-    sums           12*4+3, 15% of 80, 200 + 20%, sqrt(2), 2^10
-    units          5 ft in cm, 70 f to c, 3 stone to kg, 2 gb in mb, 10 mph to kph
-    currencies     20 usd to gbp, £50 in eur (live daily rates)
-    Enter copies the answer
+SHELF PAGE
+----------
+- Drop files on the notch to keep them, drag them out again (move or copy,
+  like File Explorer)
+- Picture previews, right-click menu that matches the notch
+- Screenshots (Snipping Tool, Win+Shift+S, PrintScreen, ShareX) land on the
+  shelf automatically and the notch pops open to show them
+- Scratch pad for quick notes, saved as you type
 
 
 BUBBLES
 -------
-- Round shortcut buttons that pop out around the open notch
-- Defaults: Camera, Terminal, Pictures, Documents, Music
-- Add your own (ready-made presets or any folder, app or link) with a choice of icons
-- Arrange them by dragging, with separate layouts for the tall, short and mini notch
-
-
-SYSTEM STATS
-------------
-- CPU use, memory use and network speed (down / up) in the open notch
-
-
-THEMES
-------
-- Accent colour: 9 presets or any colour you like
-- Notch style: black, graphite, glass (see-through) or black with an outline
-- Optionally colour the progress and volume bars too
-- The Settings window follows your accent colour too
-
-
-HANDHELD MODE (ROG Ally / Ally X, ROG Xbox Ally, Steam Deck, Legion Go, MSI Claw...)
-------------------------------------------------------------------------------------
-- Detects which handheld you have, or pick it yourself
-- Tap to open, bigger buttons for fingers
-- Controller navigation: hold View + Menu, or a back button mapped to Ctrl+Alt+N
-- Quick glance over games
-- Battery details: percentage, time left, power draw graph, battery health
-- Low battery warnings (shown even over games)
-- Brightness and volume sliders
-- Quick switches: Wi-Fi, Bluetooth, Airplane mode, refresh rate, power mode,
-  resolution (720p / 1080p), on-screen keyboard, Game Bar, stay awake, screen off
-- Download speed, and stay awake until a download finishes
-- Automatic profiles: max Hz + Performance when plugged in,
-  60 Hz + Efficiency on battery
-- Per-game profiles (remembers refresh rate and power mode for each game)
-- Play session stats
-
-
-PROTECTION & POWER
-------------------
-- Quit protection: hold Alt+F4 / Ctrl+Q (optionally Ctrl+W) to close - a quick
-  press does nothing. Hold time and which apps are protected are adjustable
-- Keep awake while chosen apps are open (OBS, games, video players...),
-  optionally keeping the screen on too
+- Round shortcut buttons around the open notch (sides and bottom) for your
+  apps, folders and websites - arrange them in Settings → Bubbles
 
 
 UPDATES
 -------
-- Checks GitHub for new versions and offers to update itself
-  (shows what's new; Update now / Later / Skip this version)
-- Updates install in a few seconds and WinNotch restarts by itself
+- Checks GitHub for new versions and offers to update itself (Settings →
+  General → Updates, or right-click the tray icon → Check for updates)

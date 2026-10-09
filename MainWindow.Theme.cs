@@ -4,11 +4,9 @@ using System.Windows.Media.Animation;
 
 namespace WinNotch;
 
-// Themes: accent colour, notch style (black / graphite / glass / outline) and notch width.
+// Themes (same choices as WinNotch v1): accent colour, notch style and notch width.
 public partial class MainWindow
 {
-    private Brush NotchBrush { get; set; } = Brushes.Black;
-
     public static readonly (string Name, string Hex)[] AccentChoices =
     {
         ("Orange", "#FF9F0A"), ("Blue", "#0A84FF"), ("Green", "#30D158"), ("Teal", "#64D2FF"),
@@ -42,28 +40,31 @@ public partial class MainWindow
 
     private void ApplyTheme()
     {
-        // Accent: open-tool buttons, timer, controller ring, and (optionally) the bars
         if (!TryParseColour(_settings.AccentColor, out var accent)) accent = Color.FromRgb(0xFF, 0x9F, 0x0A);
-        AccentOrange.Color = accent;
-        NavRing.BorderBrush = AccentOrange;
-        CompactTimerIcon.Foreground = AccentOrange;
-        TrackFill.Background = _settings.AccentBars ? AccentOrange : Brushes.White;
-        HudFill.Background = _settings.AccentBars ? AccentOrange : Brushes.White;
+        Resources["Accent"] = new SolidColorBrush(accent);
 
-        // Notch style
-        NotchBrush = NotchBrushFor(_settings.NotchStyle);
-        Pill.Background = NotchBrush;
-        bool outline = _settings.NotchStyle is "outline" or "glass";
-        Pill.BorderBrush = outline ? Frozen(Color.FromArgb(_settings.NotchStyle == "outline" ? (byte)0x55 : (byte)0x33, 0xFF, 0xFF, 0xFF)) : null;
-        Pill.BorderThickness = outline ? new Thickness(1, 0, 1, 1) : new Thickness(0);
-        foreach (var b in _bubbles) b.Background = NotchBrush;
-
-        // Notch width: re-settle to the new size
-        if (!_hudShowing)
+        // Notch background, and the boxes inside it to match
+        string style = _settings.NotchStyle;
+        Pill.Background = NotchBrushFor(style);
+        Resources["Surface"] = new SolidColorBrush(style switch
         {
-            Pill.BeginAnimation(WidthProperty, new DoubleAnimation(_expanded ? ExpandedW : CollapsedW, TimeSpan.FromMilliseconds(260))
-            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
-            if (_expanded) AnimateExpandedHeight();
-        }
+            "grey" => Color.FromRgb(0x2C, 0x2C, 0x2E),
+            "glass" => Color.FromArgb(0x99, 0x2C, 0x2C, 0x2E),
+            _ => Color.FromRgb(0x1C, 0x1C, 0x1E),
+        });
+        Resources["SurfaceHover"] = new SolidColorBrush(style switch
+        {
+            "grey" => Color.FromRgb(0x3A, 0x3A, 0x3C),
+            "glass" => Color.FromArgb(0xBB, 0x3A, 0x3A, 0x3C),
+            _ => Color.FromRgb(0x2C, 0x2C, 0x2E),
+        });
+        bool outline = style is "outline" or "glass";
+        Pill.BorderBrush = outline ? Frozen(Color.FromArgb(style == "outline" ? (byte)0x55 : (byte)0x33, 0xFF, 0xFF, 0xFF)) : null;
+        Pill.BorderThickness = outline ? new Thickness(1, 0, 1, 1) : new Thickness(0);
+        if (_results.Count > 0) Highlight();
+
+        // Width: settle at the new size
+        Pill.BeginAnimation(WidthProperty, new DoubleAnimation(_expanded ? ExpandedW : CollapsedW, TimeSpan.FromMilliseconds(260))
+        { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
     }
 }

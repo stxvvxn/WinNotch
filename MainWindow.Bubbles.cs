@@ -11,6 +11,9 @@ namespace WinNotch;
 public partial class MainWindow
 {
     private readonly List<Button> _bubbles = new();
+
+    /// <summary>Tag on the bubbles that switch the notch to a page (system info, music, volume, shelf).</summary>
+    private sealed record PageBubble(int Page);
     private readonly Dictionary<Button, (double X, double Y, double FromX, double FromY)> _bubbleSlots = new();
 
     /// <summary>(Re)creates the bubbles from Settings.</summary>
@@ -19,37 +22,83 @@ public partial class MainWindow
         BubbleLayer.Children.Clear();
         _bubbles.Clear();
         _bubbleSlots.Clear();
-        if (!_settings.ShowBubbles) return;
 
-        foreach (var bubble in _settings.Bubbles.Where(b => (b.Enabled || b.ShortEnabled || b.MiniEnabled) && !string.IsNullOrWhiteSpace(b.Target)))
+        // Page bubbles first: they sit in the middle of the row under the notch
+        var pages = EnabledPages();
+        if (pages.Count > 1)
         {
-            var scale = new ScaleTransform(0.4, 0.4);
-            var move = new TranslateTransform();
-            var transforms = new TransformGroup();
-            transforms.Children.Add(scale);
-            transforms.Children.Add(move);
-            var button = new Button
+            foreach (int page in pages)
             {
-                Style = (Style)FindResource("BubbleButton"),
-                Content = IconGlyph(bubble.Icon),
-                ToolTip = bubble.Label,
-                Tag = bubble,
-                Background = NotchBrush,
-                Opacity = 0,
-                IsHitTestVisible = false,
-                RenderTransformOrigin = new Point(0.5, 0.5),
-                RenderTransform = transforms,
-            };
-            button.Click += Bubble_Click;
-            // Moving onto a bubble counts as still hovering the notch
-            button.MouseEnter += Pill_MouseEnter;
-            button.MouseLeave += Pill_MouseLeave;
+                var (glyph, name) = PageInfo(page);
+                var button = MakeBubble(glyph, name, new PageBubble(page));
+                int target = page;
+                button.Click += (_, _) => ShowPage(target);
+            }
+            UpdatePageBubbles();
+        }
 
-            BubbleLayer.Children.Add(button);
-            _bubbles.Add(button);
+        if (_settings.ShowBubbles)
+        {
+            foreach (var bubble in _settings.Bubbles.Where(b => (b.Enabled || b.ShortEnabled || b.MiniEnabled) && !string.IsNullOrWhiteSpace(b.Target)))
+                MakeBubble(IconGlyph(bubble.Icon), bubble.Label, bubble).Click += Bubble_Click;
         }
 
         if (_expanded) ShowBubbles(true);
+    }
+
+    private static (string Glyph, string Name) PageInfo(int page) => page switch
+    {
+        1 => ("\uE767", "Volume"),
+        2 => ("\uE7B8", "Shelf"),
+        3 => ("\uE8D6", "Music"),
+        _ => ("\uE9D9", "System info"),
+    };
+
+    /// <summary>The page you're on gets a filled bubble in the accent colour.</summary>
+    private void UpdatePageBubbles()
+    {
+        foreach (var b in _bubbles)
+        {
+            if (b.Tag is not PageBubble pb) continue;
+            if (pb.Page == _page)
+            {
+                b.SetResourceReference(BackgroundProperty, "Accent");
+                b.Foreground = Brushes.Black;
+            }
+            else
+            {
+                b.Background = Pill.Background;
+                b.Foreground = Brushes.White;
+            }
+        }
+    }
+
+    private Button MakeBubble(string glyph, string tip, object tag)
+    {
+        var scale = new ScaleTransform(0.4, 0.4);
+        var move = new TranslateTransform();
+        var transforms = new TransformGroup();
+        transforms.Children.Add(scale);
+        transforms.Children.Add(move);
+        var button = new Button
+        {
+            Style = (Style)FindResource("BubbleButton"),
+            Content = glyph,
+            ToolTip = tip,
+            Tag = tag,
+            Background = Pill.Background,
+            Opacity = 0,
+            IsHitTestVisible = false,
+            RenderTransformOrigin = new Point(0.5, 0.5),
+            RenderTransform = transforms,
+        };
+        // Moving onto a bubble counts as still hovering the notch
+        button.MouseEnter += Pill_MouseEnter;
+        button.MouseLeave += Pill_MouseLeave;
+
+        BubbleLayer.Children.Add(button);
+        _bubbles.Add(button);
+        return button;
     }
 
     private static string IconGlyph(string icon) =>
@@ -65,20 +114,34 @@ public partial class MainWindow
     private void PlanBubbles(double notchHeight)
     {
         _bubbleSlots.Clear();
-        double notchLeft = (WindowW - ExpandedW) / 2;
+        double notchLeft = (Root.ActualWidth - ExpandedW) / 2; // the notch is centred in the window
 
         // Tall, short and mini open notches each have their own layout
         _bubbleLayout = BubbleLayout.For(notchHeight);
-        var visible = _bubbles.Select(b => (BubbleSetting)b.Tag).Where(b => b.IsShown(_bubbleLayout));
+        var visible = _bubbles.Select(b => b.Tag).OfType<BubbleSetting>().Where(b => b.IsShown(_bubbleLayout));
         var arranged = BubbleLayout.Arrange(visible, BubbleLayout.SideCapacity(notchHeight), _bubbleLayout);
-        int bottomCount = arranged.Count(a => a.Side == BubbleSide.Bottom);
+        Button ButtonFor(BubbleSetting s) => _bubbles.First(b => ReferenceEquals(b.Tag, s));
 
-        foreach (var (bubble, side, index, _) in arranged)
+        // Left and right columns
+        foreach (var (bubble, side, index, _) in arranged.Where(a => a.Side != BubbleSide.Bottom))
         {
-            var button = _bubbles.First(b => ReferenceEquals(b.Tag, bubble));
-            var (x, y) = BubbleLayout.Position(side, index, bottomCount, notchLeft, ExpandedW, notchHeight);
+            var (x, y) = BubbleLayout.Position(side, index, 0, notchLeft, ExpandedW, notchHeight);
             var (fromX, fromY) = BubbleLayout.PopFrom(side);
-            _bubbleSlots[button] = (x, y, fromX, fromY);
+            _bubbleSlots[ButtonFor(bubble)] = (x, y, fromX, fromY);
+        }
+
+        // Row underneath: the page bubbles in the middle, then your own bottom bubbles after a small gap
+        var row = _bubbles.Where(b => b.Tag is PageBubble).ToList();
+        int pageCount = row.Count;
+        row.AddRange(arranged.Where(a => a.Side == BubbleSide.Bottom).OrderBy(a => a.Index).Select(a => ButtonFor(a.Bubble)));
+        double split = pageCount > 0 && row.Count > pageCount ? 14 : 0;
+        double width = row.Count * BubbleLayout.Size + Math.Max(0, row.Count - 1) * BubbleLayout.Gap + split;
+        double left = notchLeft + ExpandedW / 2 - (pageCount > 0 ? (pageCount * BubbleLayout.Size + (pageCount - 1) * BubbleLayout.Gap) / 2 : width / 2);
+        var (popX, popY) = BubbleLayout.PopFrom(BubbleSide.Bottom);
+        for (int i = 0; i < row.Count; i++)
+        {
+            double x = left + i * (BubbleLayout.Size + BubbleLayout.Gap) + (i >= pageCount ? split : 0);
+            _bubbleSlots[row[i]] = (x, notchHeight + BubbleLayout.Gap, popX, popY);
         }
     }
 
@@ -87,7 +150,7 @@ public partial class MainWindow
     private void ShowBubbles(bool show)
     {
         if (_bubbles.Count == 0) return;
-        if (show) PlanBubbles(ExpandedTargetHeight);
+        if (show) PlanBubbles(ExpandedHeight);
         PopBubbles(show);
     }
 
@@ -171,9 +234,11 @@ public partial class MainWindow
         string target = Environment.ExpandEnvironmentVariables(bubble.Target.Trim().Trim('"'));
 
         if (!TryOpen(target) && !(bubble.Key == "terminal" && TryOpen("powershell.exe")))
-            ShowTopMessage($"Couldn't open {bubble.Label} — check it in Settings → Bubbles", LowRed, 4);
+            DebugLog.Write($"couldn't open bubble {bubble.Label}: {target}");
 
-        if (KeepOpen) CloseFromAlly(); // touch / controller: get out of the way
+        // Get out of the way of whatever just opened
+        _hovering = false;
+        SetExpanded(false);
     }
 
     private static bool TryOpen(string target)

@@ -1,191 +1,252 @@
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace WinNotch;
 
-/// <summary>A file or folder sitting on the shelf. The shelf holds a reference, not a copy.</summary>
-public sealed class ShelfItem
-{
-    public string FullPath { get; init; } = "";
-    public ImageSource? Icon { get; init; }
-    public string Name
-    {
-        get
-        {
-            string name = System.IO.Path.GetFileName(FullPath.TrimEnd('\\', '/'));
-            return string.IsNullOrEmpty(name) ? FullPath : name;
-        }
-    }
-}
-
-// Shelf feature: drag files onto the notch to park them, drag them out again to drop them somewhere else
+// Shelf (third page): drag files onto the notch to park them, drag them out again to drop them somewhere else.
 public partial class MainWindow
 {
-    private readonly ObservableCollection<ShelfItem> _shelf = new();
-    private bool _dragOver;       // something is being dragged over the notch right now
-    private bool _draggingOut;    // we're dragging an item out of the shelf
-    private Point _dragStart;
-    private ShelfItem? _pressedItem;
+    private readonly List<string> _shelf = new();
+    private bool _shelfLoaded, _dragOver, _draggingOut;
+    private readonly DispatcherTimer _dragLeaveTimer = new() { Interval = TimeSpan.FromMilliseconds(350) };
+    private bool _dragLeaveReady;
+    private Point _shelfPressAt;
+    private string? _shelfPressed;
 
-    private static readonly string ShelfFile = System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinNotch", "shelf.json");
+    private static string ShelfFile => Path.Combine(AppSettings.Folder, "shelf.json");
 
-    private bool ShelfVisible => _shelf.Count > 0 || _dragOver;
-
-    private void InitShelf()
-    {
-        ShelfItems.ItemsSource = _shelf;
-        LoadShelf();
-        _shelf.CollectionChanged += (_, _) =>
-        {
-            SaveShelf();
-            UpdateShelfLayout();
-        };
-        UpdateShelfLayout();
-    }
-
-    private void UpdateShelfLayout()
-    {
-        ShelfHint.Visibility = _shelf.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        ClearShelfButton.Visibility = _shelf.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        ShelfArea.BorderBrush = new SolidColorBrush(_dragOver
-            ? Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF)
-            : Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF));
-
-        RefreshSections();
-    }
-
-    // ---------- Dragging files IN ----------
+    // ---------- Dragging files in ----------
 
     private void Pill_DragEnter(object sender, DragEventArgs e)
     {
-        if (_draggingOut || !e.Data.GetDataPresent(DataFormats.FileDrop))
-        {
-            e.Effects = DragDropEffects.None;
-            e.Handled = true;
-            return;
-        }
-
-        e.Effects = DragDropEffects.Copy;
+        bool files = !_draggingOut && _settings.ShelfPage && e.Data.GetDataPresent(DataFormats.FileDrop);
+        e.Effects = files ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
-        _collapseTimer.Stop();
+        if (!files) return;
 
+        _dragLeaveTimer.Stop();
+        _hoverTimer.Stop();
         if (!_dragOver)
         {
             _dragOver = true;
-            _openTool = null; // show the shelf, not a tool panel
-            SetExpanded(true);
-            UpdateShelfLayout();
+            if (_settings.ShelfAutoOpen)
+            {
+                SetExpanded(true);
+                ShowPage(2);
+            }
+            ShowDropHighlight();
         }
     }
 
     private void Pill_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = !_draggingOut && e.Data.GetDataPresent(DataFormats.FileDrop)
+        e.Effects = !_draggingOut && _settings.ShelfPage && e.Data.GetDataPresent(DataFormats.FileDrop)
             ? DragDropEffects.Copy
             : DragDropEffects.None;
         e.Handled = true;
-        _collapseTimer.Stop();
+        _dragLeaveTimer.Stop();
     }
 
     private void Pill_DragLeave(object sender, DragEventArgs e)
     {
-        // DragLeave also fires when moving between elements inside the notch,
-        // so wait a moment before deciding the drag has really left
-        _collapseTimer.Stop();
-        _collapseTimer.Interval = TimeSpan.FromMilliseconds(350);
-        _collapseTimer.Tick -= EndDragOverOnTimer;
-        _collapseTimer.Tick += EndDragOverOnTimer;
-        _collapseTimer.Start();
-    }
-
-    private void EndDragOverOnTimer(object? sender, EventArgs e)
-    {
-        _collapseTimer.Tick -= EndDragOverOnTimer;
-        if (_dragOver)
+        // Also fires when moving between things inside the notch, so wait a moment before deciding
+        if (!_dragLeaveReady)
         {
-            _dragOver = false;
-            UpdateShelfLayout();
-            if (!_hovering) SetExpanded(false);
+            _dragLeaveReady = true;
+            _dragLeaveTimer.Tick += (_, _) =>
+            {
+                _dragLeaveTimer.Stop();
+                if (!_dragOver) return;
+                _dragOver = false;
+                ShowDropHighlight();
+                if (!_hovering && !_typing) SetExpanded(false);
+            };
         }
+        _dragLeaveTimer.Stop();
+        _dragLeaveTimer.Start();
     }
 
     private void Pill_Drop(object sender, DragEventArgs e)
     {
         e.Handled = true;
         _dragOver = false;
+        _dragLeaveTimer.Stop();
+        if (_draggingOut || !_settings.ShelfPage || e.Data.GetData(DataFormats.FileDrop) is not string[] paths) return;
 
-        if (!_draggingOut && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
-        {
-            foreach (var path in paths) AddToShelf(path);
-        }
+        foreach (var path in paths) AddToShelf(path);
+        SetExpanded(true);
+        ShowPage(2);
+        ShowDropHighlight();
+        SaveShelf();
 
-        UpdateShelfLayout();
+        // Stay open a moment so you can see what landed, then tuck away if the mouse has gone
+        _hoverTimer.Stop();
+        _hoverTimer.Interval = TimeSpan.FromSeconds(1.5);
+        _hoverTimer.Start();
+    }
 
-        // Stay open briefly so you can see what landed, then tuck away
-        _collapseTimer.Stop();
-        _collapseTimer.Interval = TimeSpan.FromSeconds(1.5);
-        _collapseTimer.Start();
+    private void ShowDropHighlight()
+    {
+        ShelfDrop.BorderBrush = _dragOver ? (Brush)FindResource("Accent") : new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF));
+        ShelfDrop.BorderThickness = new Thickness(_dragOver ? 2 : 1);
     }
 
     private void AddToShelf(string path)
     {
         if (!File.Exists(path) && !Directory.Exists(path)) return;
-        if (_shelf.Any(i => string.Equals(i.FullPath, path, StringComparison.OrdinalIgnoreCase))) return;
-        _shelf.Add(new ShelfItem { FullPath = path, Icon = GetIcon(path) });
+        if (_shelf.Any(p => p.Equals(path, StringComparison.OrdinalIgnoreCase))) return;
+        _shelf.Add(path);
+        RefreshShelf();
     }
 
-    // ---------- Dragging files OUT ----------
+    // ---------- Showing it ----------
 
-    private void ShelfItem_MouseDown(object sender, MouseButtonEventArgs e)
+    private void RefreshShelf()
     {
-        var item = (sender as FrameworkElement)?.DataContext as ShelfItem;
-        if (item == null) return;
+        if (!_shelfLoaded) LoadShelf();
+        _shelf.RemoveAll(p => !File.Exists(p) && !Directory.Exists(p)); // moved or deleted elsewhere
 
-        if (e.ClickCount == 2)
-        {
-            OpenPath(item.FullPath);
-            e.Handled = true;
-            return;
-        }
-
-        _pressedItem = item;
-        _dragStart = e.GetPosition(this);
+        ShelfItems.Children.Clear();
+        foreach (var path in _shelf) ShelfItems.Children.Add(BuildShelfItem(path));
+        ShelfEmpty.Visibility = Vis(_shelf.Count == 0);
+        ShelfClear.Visibility = Vis(_shelf.Count > 0);
+        ShelfTitle.Text = _shelf.Count == 0 ? "SHELF" : $"SHELF · {_shelf.Count} item{(_shelf.Count == 1 ? "" : "s")}";
+        AnimateHeight();
     }
 
-    private void ShelfItem_MouseMove(object sender, MouseEventArgs e)
+    private FrameworkElement BuildShelfItem(string path)
     {
-        if (_pressedItem == null || e.LeftButton != MouseButtonState.Pressed)
+        string name = Path.GetFileName(path.TrimEnd('\\', '/'));
+        if (name.Length == 0) name = path;
+
+        var stack = new StackPanel { Width = 72 };
+        stack.Children.Add(new Image
         {
-            _pressedItem = null;
+            Source = ShelfIcon(path),
+            Width = 40,
+            Height = 40,
+            Stretch = Stretch.Uniform,
+            Margin = new Thickness(0, 4, 0, 4),
+        });
+        stack.Children.Add(new TextBlock
+        {
+            Text = name,
+            Foreground = Brushes.White,
+            FontSize = 10.5,
+            TextAlignment = TextAlignment.Center,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            MaxWidth = 68,
+        });
+
+        var tile = new Border
+        {
+            CornerRadius = new CornerRadius(9),
+            Padding = new Thickness(2, 4, 2, 6),
+            Margin = new Thickness(2),
+            Background = Brushes.Transparent,
+            Cursor = Cursors.Hand,
+            ToolTip = path,
+            Child = stack,
+        };
+        tile.MouseEnter += (_, _) => tile.Background = (Brush)FindResource("SurfaceHover");
+        tile.MouseLeave += (_, _) => tile.Background = Brushes.Transparent;
+
+        // Double-click opens; drag to take it out
+        tile.PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            if (e.ClickCount == 2)
+            {
+                WebTools.Open(path);
+                e.Handled = true;
+                return;
+            }
+            _shelfPressed = path;
+            _shelfPressAt = e.GetPosition(this);
+        };
+        tile.PreviewMouseMove += (_, e) => ShelfItemMouseMove(tile, e);
+
+        // Right-click menu, styled like the notch
+        var menu = new ContextMenu { Style = (Style)FindResource("NotchMenu") };
+        void Add(string glyph, string header, Action action, Brush? colour = null)
+        {
+            var mi = new MenuItem { Header = header, Tag = glyph, Style = (Style)FindResource("NotchMenuItem") };
+            if (colour != null) mi.Foreground = colour;
+            mi.Click += (_, _) => action();
+            menu.Items.Add(mi);
+        }
+        Add("\uE8E5", "Open", () => WebTools.Open(path));
+        Add("\uE838", "Show in folder", () => { try { Process.Start("explorer.exe", $"/select,\"{path}\""); } catch { } });
+        Add("\uE8C8", "Copy path", () => { try { Clipboard.SetText(path); } catch { } });
+        menu.Items.Add(new Separator { Style = (Style)FindResource("NotchMenuSeparator") });
+        Add("\uE74D", "Remove from shelf", () => { _shelf.Remove(path); SaveShelf(); RefreshShelf(); },
+            new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B)));
+
+        // The menu is its own little window, so moving onto it would look like leaving the notch:
+        // keep the notch open while it's showing
+        menu.Opened += (_, _) =>
+        {
+            _menuOpen = true;
+            _hoverTimer.Stop();
+            SetForegroundWindow(_hwnd); // so the menu closes when you click elsewhere
+            BringMenuToFront(menu);
+        };
+        menu.Closed += (_, _) =>
+        {
+            _menuOpen = false;
+            if (!Pill.IsMouseOver)
+            {
+                _hovering = false;
+                _hoverTimer.Stop();
+                _hoverTimer.Interval = TimeSpan.FromMilliseconds(600);
+                _hoverTimer.Start();
+            }
+        };
+        tile.ContextMenu = menu;
+        return tile;
+    }
+
+    // The notch is "always on top", so make sure the menu sits above it
+    private void BringMenuToFront(ContextMenu menu)
+    {
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            if (PresentationSource.FromVisual(menu) is System.Windows.Interop.HwndSource source)
+            {
+                const uint SWP_NOSIZE = 0x0001, SWP_NOMOVE = 0x0002, SWP_NOACTIVATE = 0x0010;
+                SetWindowPos(source.Handle, new IntPtr(-1) /* topmost */, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+            }
+        }), DispatcherPriority.Loaded);
+    }
+
+    // ---------- Dragging files out ----------
+
+    private void ShelfItemMouseMove(FrameworkElement tile, MouseEventArgs e)
+    {
+        if (_shelfPressed == null || e.LeftButton != MouseButtonState.Pressed)
+        {
+            _shelfPressed = null;
             return;
         }
-
         var pos = e.GetPosition(this);
-        if (Math.Abs(pos.X - _dragStart.X) < SystemParameters.MinimumHorizontalDragDistance &&
-            Math.Abs(pos.Y - _dragStart.Y) < SystemParameters.MinimumVerticalDragDistance)
+        if (Math.Abs(pos.X - _shelfPressAt.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(pos.Y - _shelfPressAt.Y) < SystemParameters.MinimumVerticalDragDistance)
             return;
 
-        var item = _pressedItem;
-        _pressedItem = null;
-
-        var data = new DataObject(DataFormats.FileDrop, new[] { item.FullPath });
+        string path = _shelfPressed;
+        _shelfPressed = null;
         _draggingOut = true;
         try
         {
-            // Same as dragging from File Explorer: moves on the same drive, copies to another drive.
-            // Hold Ctrl while dropping to force a copy, Shift to force a move.
-            DragDrop.DoDragDrop((DependencyObject)sender, data, DragDropEffects.Copy | DragDropEffects.Move);
+            // Like dragging from File Explorer: moves on the same drive, copies to another
+            // (hold Ctrl to copy, Shift to move)
+            DragDrop.DoDragDrop(tile, new DataObject(DataFormats.FileDrop, new[] { path }), DragDropEffects.Copy | DragDropEffects.Move);
         }
         catch { }
         finally
@@ -193,53 +254,35 @@ public partial class MainWindow
             _draggingOut = false;
         }
 
-        // If the file was moved somewhere else, it no longer exists here, so take it off the shelf
-        if (!File.Exists(item.FullPath) && !Directory.Exists(item.FullPath))
-            _shelf.Remove(item);
+        if (_settings.ShelfRemoveAfterDrag || (!File.Exists(path) && !Directory.Exists(path)))
+        {
+            _shelf.Remove(path);
+            SaveShelf();
+        }
+        RefreshShelf();
     }
 
-    private void ShelfScroller_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    private void ShelfClear_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) => ClearShelf();
+
+    public void ClearShelf()
     {
-        ShelfScroller.ScrollToHorizontalOffset(ShelfScroller.HorizontalOffset - e.Delta / 2.0);
-        e.Handled = true;
+        _shelf.Clear();
+        SaveShelf();
+        RefreshShelf();
     }
 
-    // ---------- Right-click menu & clear ----------
-
-    private static ShelfItem? ItemFromMenu(object sender) => (sender as FrameworkElement)?.DataContext as ShelfItem;
-
-    private void ShelfOpen_Click(object sender, RoutedEventArgs e)
-    {
-        if (ItemFromMenu(sender) is { } item) OpenPath(item.FullPath);
-    }
-
-    private void ShelfShowInFolder_Click(object sender, RoutedEventArgs e)
-    {
-        if (ItemFromMenu(sender) is not { } item) return;
-        try { Process.Start("explorer.exe", $"/select,\"{item.FullPath}\""); } catch { }
-    }
-
-    private void ShelfRemove_Click(object sender, RoutedEventArgs e)
-    {
-        if (ItemFromMenu(sender) is { } item) _shelf.Remove(item);
-    }
-
-    private void ClearShelf_Click(object sender, RoutedEventArgs e) => _shelf.Clear();
-
-    private static void OpenPath(string path)
-    {
-        try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
-    }
-
-    // ---------- Remember the shelf between restarts ----------
+    // ---------- Remembering it ----------
 
     private void LoadShelf()
     {
+        _shelfLoaded = true;
+        if (!_settings.ShelfRemember) return;
         try
         {
             if (!File.Exists(ShelfFile)) return;
-            var paths = JsonSerializer.Deserialize<string[]>(File.ReadAllText(ShelfFile)) ?? Array.Empty<string>();
-            foreach (var path in paths) AddToShelf(path); // skips anything that's since been deleted
+            foreach (var path in JsonSerializer.Deserialize<string[]>(File.ReadAllText(ShelfFile)) ?? Array.Empty<string>())
+                if ((File.Exists(path) || Directory.Exists(path)) && !_shelf.Contains(path, StringComparer.OrdinalIgnoreCase))
+                    _shelf.Add(path);
         }
         catch { }
     }
@@ -248,41 +291,25 @@ public partial class MainWindow
     {
         try
         {
-            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(ShelfFile)!);
-            File.WriteAllText(ShelfFile, JsonSerializer.Serialize(_shelf.Select(i => i.FullPath).ToArray()));
+            Directory.CreateDirectory(AppSettings.Folder);
+            if (_settings.ShelfRemember) File.WriteAllText(ShelfFile, JsonSerializer.Serialize(_shelf));
+            else if (File.Exists(ShelfFile)) File.Delete(ShelfFile);
         }
         catch { }
     }
 
-    // ---------- File icons ----------
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct SHFILEINFO
+    // Pictures get a real thumbnail, everything else its normal Windows icon
+    private ImageSource? ShelfIcon(string path)
     {
-        public IntPtr hIcon;
-        public int iIcon;
-        public uint dwAttributes;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szDisplayName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)] public string szTypeName;
-    }
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-    private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
-
-    [DllImport("user32.dll")] private static extern bool DestroyIcon(IntPtr hIcon);
-
-    private static ImageSource? GetIcon(string path)
-    {
-        // Pictures get a real thumbnail
-        string ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        if (ext is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif")
+        string ext = Path.GetExtension(path).ToLowerInvariant();
+        if (_settings.ShelfThumbnails && ext is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".webp" or ".jfif")
         {
             try
             {
                 var bmp = new BitmapImage();
                 bmp.BeginInit();
                 bmp.UriSource = new Uri(path);
-                bmp.DecodePixelWidth = 72;
+                bmp.DecodePixelWidth = 80;
                 bmp.CacheOption = BitmapCacheOption.OnLoad; // don't keep the file locked
                 bmp.EndInit();
                 bmp.Freeze();
@@ -290,23 +317,6 @@ public partial class MainWindow
             }
             catch { }
         }
-
-        // Everything else gets its normal Windows icon
-        const uint SHGFI_ICON = 0x100, SHGFI_LARGEICON = 0x0;
-        var info = new SHFILEINFO();
-        if (SHGetFileInfo(path, 0, ref info, (uint)Marshal.SizeOf<SHFILEINFO>(), SHGFI_ICON | SHGFI_LARGEICON) == IntPtr.Zero
-            || info.hIcon == IntPtr.Zero)
-            return null;
-
-        try
-        {
-            var src = Imaging.CreateBitmapSourceFromHIcon(info.hIcon, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            src.Freeze();
-            return src;
-        }
-        finally
-        {
-            DestroyIcon(info.hIcon);
-        }
+        return ShellIcon(path);
     }
 }

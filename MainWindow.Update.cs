@@ -84,21 +84,30 @@ public partial class MainWindow
         if (!Updater.CanSelfUpdate)
         {
             MessageBox.Show("This copy was started from the code (run.bat), so it can't replace itself.\n\n" +
-                            "Download the new code from GitHub instead, or use the WinNotch.exe from the latest release.",
+                            "Pull the new code from GitHub instead, or use WinNotch.exe from the latest release.",
                             "WinNotch", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         try
         {
-            ShowTopMessage($"Downloading WinNotch {update.Version}…", AccentOrange, 30);
+            // Progress shows on the closed notch where the date normally is
             var progress = new Progress<double>(p =>
-                ShowHud("", p, null, $"{Math.Round(p * 100)}%", TimeSpan.FromSeconds(3)));
+            {
+                _headerFlash = $"Updating… {Math.Round(p * 100)}%";
+                _headerFlashUntil = DateTime.Now.AddSeconds(30);
+                UpdateClock();
+            });
+            _headerFlash = "Updating…";
+            _headerFlashUntil = DateTime.Now.AddSeconds(30);
+            UpdateClock();
             await Updater.InstallAsync(update, progress);
             Application.Current.Shutdown(); // the new version is already starting
         }
         catch (Exception ex)
         {
+            _headerFlash = null;
+            UpdateClock();
             MessageBox.Show($"The update didn't work, so nothing was changed.\n\n{ex.Message}", "WinNotch",
                             MessageBoxButton.OK, MessageBoxImage.Warning);
         }
@@ -110,6 +119,7 @@ public partial class MainWindow
     private UpdateChoice AskToUpdate(UpdateInfo update)
     {
         var choice = UpdateChoice.Later;
+        var accent = (Brush)FindResource("Accent");
         var dialog = new Window
         {
             Title = "WinNotch update",
@@ -163,7 +173,7 @@ public partial class MainWindow
                 Padding = new Thickness(16, 6, 16, 6),
                 Margin = new Thickness(8, 0, 0, 0),
                 Foreground = primary ? Brushes.Black : Brushes.White,
-                Background = primary ? AccentOrange : new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)),
+                Background = primary ? accent : new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)),
                 BorderThickness = new Thickness(0),
                 IsDefault = primary,
                 IsCancel = result == UpdateChoice.Later,

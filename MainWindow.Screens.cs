@@ -11,6 +11,25 @@ public partial class MainWindow
     private readonly DispatcherTimer _screenTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
     private IntPtr _currentMonitor;
     private bool _hiddenForFullscreen;
+    private bool _userHidden; // hidden from the tray icon
+
+    // A due reminder still shows over full-screen apps and when hidden from the tray
+    private bool NotchHidden => !_reminderShowing && (_hiddenForFullscreen || _userHidden);
+
+    private void ApplyNotchVisibility()
+    {
+        if (NotchHidden)
+        {
+            SetExpanded(false);
+            Pill.Visibility = Visibility.Hidden;
+        }
+        else if (Pill.Visibility != Visibility.Visible)
+        {
+            Pill.Visibility = Visibility.Visible;
+            PositionWindow();
+        }
+        UpdateTrayText();
+    }
 
     private void InitScreens()
     {
@@ -44,14 +63,18 @@ public partial class MainWindow
     private void WinEventHandler(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
     {
         // A new app came to the front: re-check full screen first, then reclaim the top spot
-        CheckFullscreen();
-        KeepOnTop();
+        Dispatcher.BeginInvoke(() =>
+        {
+            CheckFullscreen();
+            KeepOnTop();
+        });
     }
 
     // Other "always on top" windows (and some apps) can push the notch down; this puts it back above them.
     private void KeepOnTop()
     {
         if (_hwnd == IntPtr.Zero || Pill.Visibility != Visibility.Visible) return;
+        if (_menuOpen) return; // don't jump above a right-click menu that's showing
         const uint SWP_NOSIZE = 0x0001, SWP_NOMOVE = 0x0002, SWP_NOACTIVATE = 0x0010, SWP_NOOWNERZORDER = 0x0200;
         SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
     }
@@ -154,6 +177,7 @@ public partial class MainWindow
     {
         IntPtr fg = GetForegroundWindow();
         if (fg == IntPtr.Zero || fg == _hwnd) return false;
+        const int GWL_STYLE = -16, WS_CAPTION = 0x00C00000;
 
         GetWindowThreadProcessId(fg, out uint pid);
         if (pid == (uint)Environment.ProcessId) return false;
@@ -164,7 +188,6 @@ public partial class MainWindow
         if (name is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd") return false; // the desktop
 
         // A normal maximised window (with a title bar) isn't full screen, even when the taskbar is set to auto-hide
-        const int GWL_STYLE = -16, WS_CAPTION = 0x00C00000;
         if (IsZoomed(fg) && (GetWindowLong(fg, GWL_STYLE) & WS_CAPTION) == WS_CAPTION) return false;
 
         if (MonitorFromWindow(fg, 2) != _currentMonitor) return false;

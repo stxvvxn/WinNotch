@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace WinNotch;
@@ -13,7 +14,7 @@ public partial class SettingsWindow : Window
     {
         _owner = owner;
         InitializeComponent();
-        MaxHeight = SystemParameters.WorkArea.Height - 40; // fits small screens like the Ally's
+        MaxHeight = SystemParameters.WorkArea.Height - 40;
         LoadValues();
         _loading = false;
     }
@@ -22,69 +23,37 @@ public partial class SettingsWindow : Window
     {
         var s = _owner.Settings;
 
-        HandheldBox.IsChecked = s.Handheld;
-        HandheldHotkeyBox.Text = s.AllyHotkey;
-        BuildDevicePicker();
-        AutoProfileBox.IsChecked = s.AutoProfile;
+        // General
         StartWithWindowsBox.IsChecked = s.StartWithWindows;
         HideInFullscreenBox.IsChecked = s.HideInFullscreen;
-        SelectByTag(SizeBox, s.Size);
-
+        SecondsBox.IsChecked = s.ShowSeconds;
+        ShowQuoteBox.IsChecked = s.ShowQuote;
+        WeatherBox.IsChecked = s.WeatherEnabled;
+        WeatherPlaceBox.Text = s.WeatherPlace;
+        if (s.WeatherPlace.Length > 0) WeatherStatus.Text = $"Showing the weather for {s.WeatherPlace}";
+        SelectByTag(WeatherUnitBox, s.WeatherFahrenheit ? "f" : "c");
+        CalendarBox.IsChecked = s.CalendarEnabled;
+        CalendarUrlsBox.Text = string.Join(Environment.NewLine, s.CalendarUrls);
+        CalendarCountdownBox.IsChecked = s.CalendarCountdown;
+        DayProgressBox.IsChecked = s.DayProgress;
+        WeekNumberBox.IsChecked = s.ShowWeekNumber;
+        if (!SelectByTag(DayProgressModeBox, s.DayProgressMode)) DayProgressModeBox.SelectedIndex = 0;
+        WorkStartBox.Text = s.WorkStart;
+        WorkEndBox.Text = s.WorkEnd;
+        QuickTogglesBox.IsChecked = s.QuickToggles;
+        ToggleMicBox.IsChecked = s.ToggleMic;
+        ToggleDndBox.IsChecked = s.ToggleDnd;
+        ToggleThemeBox.IsChecked = s.ToggleTheme;
+        ToggleBluetoothBox.IsChecked = s.ToggleBluetooth;
+        ToggleAwakeBox.IsChecked = s.ToggleAwake;
+        ToggleLockBox.IsChecked = s.ToggleLock;
+        if (!SelectByTag(SizeBox, s.Size)) SizeBox.SelectedIndex = 1;
         MonitorBox.Items.Clear();
         MonitorBox.Items.Add(new ComboBoxItem { Content = "Main display", Tag = "primary" });
         MonitorBox.Items.Add(new ComboBoxItem { Content = "Follow the mouse", Tag = "mouse" });
         foreach (var (device, label) in _owner.GetMonitorChoices())
             MonitorBox.Items.Add(new ComboBoxItem { Content = label, Tag = device });
         if (!SelectByTag(MonitorBox, s.Monitor)) MonitorBox.SelectedIndex = 0;
-
-        NowPlayingBox.IsChecked = s.ShowNowPlaying;
-        WeatherBox.IsChecked = s.ShowWeather;
-        BatteryBox.IsChecked = s.ShowBattery;
-        SoundBarsBox.IsChecked = s.ShowSoundBars;
-        PeekBox.IsChecked = s.PeekOnTrackChange;
-
-        VolumeBox.IsChecked = s.VolumePopup;
-        BrightnessBox.IsChecked = s.BrightnessPopup;
-        ChargingBox.IsChecked = s.ChargingPopup;
-        PrivacyBox.IsChecked = s.PrivacyDots;
-        BatteryFullBox.IsChecked = s.BatteryFullPopup;
-        BatterySaverBox.IsChecked = s.BatterySaverPopup;
-        ScreenshotPopupBox.IsChecked = s.ScreenshotPopup;
-        ScreenshotShelfBox.IsChecked = s.ScreenshotToShelf;
-        RainPopupBox.IsChecked = s.RainPopup;
-        if (!SelectByTag(RainLeadBox, s.RainLeadMinutes.ToString())) RainLeadBox.SelectedIndex = 1;
-        BuildTopButtonsEditor();
-
-        ClipboardBox.IsChecked = s.ClipboardHistory;
-        TimerSoundBox.IsChecked = s.TimerSound;
-        if (!SelectByTag(ScreenshotBox, s.ScreenshotMethod)) ScreenshotBox.SelectedIndex = 0;
-
-        BubblesBox.IsChecked = s.ShowBubbles;
-        DrawBubblePreview();
-
-        // Quit protection and keep awake
-        QuitProtectBox.IsChecked = s.QuitProtection;
-        QuitCtrlWBox.IsChecked = s.QuitProtectCtrlW;
-        if (!SelectByTag(QuitHoldBox, s.QuitHoldMs.ToString())) QuitHoldBox.SelectedIndex = 1;
-        QuitOnlyBox.Text = s.QuitOnlyApps;
-        QuitIgnoreBox.Text = s.QuitIgnoreApps;
-        AwakeAppsBox.Text = s.StayAwakeApps;
-        AwakeScreenBox.IsChecked = s.StayAwakeScreenOn;
-
-        // Command bar and recording
-        SearchHotkeyBox.Text = s.SearchHotkey;
-        SearchFoldersBox.Text = string.Join(Environment.NewLine, s.SearchFolders);
-        if (!SelectByTag(RecordFpsBox, s.RecordFps.ToString())) RecordFpsBox.SelectedIndex = 1;
-        RecordCursorBox.IsChecked = s.RecordCursor;
-
-        // Updates
-        AutoUpdateBox.IsChecked = s.AutoUpdate;
-        UpdateRepoBox.Text = s.UpdateRepo;
-        VersionText.Text = $"You have version {Updater.CurrentVersion}. New versions come from the repo's GitHub releases.";
-
-        // Features
-        AboutText.Text = $"WinNotch {Updater.CurrentVersion} · everything it can do";
-        FeaturesText.Text = LoadFeatures();
 
         // Theme
         BuildAccentSwatches();
@@ -94,29 +63,95 @@ public partial class SettingsWindow : Window
         if (!SelectByTag(NotchWidthBox, s.NotchWidth)) NotchWidthBox.SelectedIndex = 1;
         ShowAccent();
 
-        // System stats
-        StatsBox.IsChecked = s.ShowStats;
-        StatsCpuBox.IsChecked = s.StatsCpu;
-        StatsRamBox.IsChecked = s.StatsRam;
-        StatsNetBox.IsChecked = s.StatsNet;
+        // Search
+        HotkeyBox.Text = s.SearchHotkey;
+        WindowsSearchBox.IsChecked = s.UseWindowsSearch;
+        FoldersBox.Text = string.Join(Environment.NewLine, s.SearchFolders);
+        foreach (var t in WebTools.AiTools) AiBox.Items.Add(new ComboBoxItem { Content = t.Name, Tag = t.Key });
+        foreach (var t in WebTools.Engines) EngineBox.Items.Add(new ComboBoxItem { Content = t.Name, Tag = t.Key });
+        if (!SelectByTag(AiBox, s.AiTool)) AiBox.SelectedIndex = 0;
+        if (!SelectByTag(EngineBox, s.WebEngine)) EngineBox.SelectedIndex = 0;
+        CustomAiBox.Text = s.CustomAiUrl;
+        CustomWebBox.Text = s.CustomWebUrl;
+        ClaudeAppBox.IsChecked = s.ClaudeDesktopApp;
 
-        // Mic
-        MicHotkeyBox.Text = s.MicHotkey;
-        MicDotBox.IsChecked = s.MicShowDot;
-        MicPopupBox.IsChecked = s.MicPopup;
+        // System info
+        ShowStatsBox.IsChecked = s.ShowSystemInfo;
+        CompactStatsBox.IsChecked = s.CompactStats;
+        VolumePageBox.IsChecked = s.VolumePage;
+        MusicPageBox.IsChecked = s.MusicPage;
+        foreach (var m in MainWindow.MusicServices) MusicServiceBox.Items.Add(new ComboBoxItem { Content = m.Name, Tag = m.Key });
+        if (!SelectByTag(MusicServiceBox, s.MusicService)) MusicServiceBox.SelectedIndex = 0;
+        MusicExtrasBox.IsChecked = s.MusicExtras;
+        BubblesBox.IsChecked = s.ShowBubbles;
+        DrawBubblePreview();
+        ShelfPageBox.IsChecked = s.ShelfPage;
+        ShelfAutoOpenBox.IsChecked = s.ShelfAutoOpen;
+        ShelfRememberBox.IsChecked = s.ShelfRemember;
+        ShelfThumbsBox.IsChecked = s.ShelfThumbnails;
+        ShelfRemoveBox.IsChecked = s.ShelfRemoveAfterDrag;
+        ShelfScratchBox.IsChecked = s.ShelfScratch;
+        ShelfScreenshotsBox.IsChecked = s.ShelfScreenshots;
+        ShelfPeekBox.IsChecked = s.ShelfScreenshotPeek;
+        RemindersBox.IsChecked = s.RemindersEnabled;
+        ReminderSoundBox.IsChecked = s.ReminderSound;
+        ReminderFullscreenBox.IsChecked = s.ReminderOverFullscreen;
+        if (!SelectByTag(ReminderCountdownBox, s.ReminderCountdownMinutes.ToString())) SelectByTag(ReminderCountdownBox, "60");
+        BuildReminderList();
+        FillNewReminderDays();
+        CpuBox.IsChecked = s.StatCpu;
+        MemoryBox.IsChecked = s.StatMemory;
+        GpuBox.IsChecked = s.StatGpu;
+        DiskBox.IsChecked = s.StatDisk;
+        NetworkBox.IsChecked = s.StatNetwork;
+        BatteryBox.IsChecked = s.StatBattery;
+        UptimeBox.IsChecked = s.StatUptime;
+        BuildDriveChoices();
 
-        // Notes and calculator
-        if (!SelectByTag(NotesSizeBox, s.NotesTextSize)) NotesSizeBox.SelectedIndex = 1;
-        CalcCurrencyBox.IsChecked = s.CalcCurrency;
-        CalcCopyBox.IsChecked = s.CalcCopyOnEnter;
-        if (!SelectByTag(CalcDecimalsBox, s.CalcDecimals.ToString())) CalcDecimalsBox.SelectedIndex = 2;
+        VersionText.Text = $"WinNotch · version {Updater.CurrentVersion}";
+        FeaturesText.Text = LoadFeatures();
+        AutoUpdateBox.IsChecked = s.AutoUpdate;
+        UpdateRepoBox.Text = s.UpdateRepo;
+        UpdateVersionText.Text = $"You have version {Updater.CurrentVersion}. New versions come from the repo's GitHub releases.";
+        // The debug restart only makes sense when running from the code
+        HardRestartButton.Visibility = App.FindRunBat() != null ? Visibility.Visible : Visibility.Collapsed;
+        UpdateVisibility();
+    }
 
-        // Image actions
-        ImageActionsBox.IsChecked = s.ImageActions;
-        ResizeWidthBox.Text = s.ImageResizeWidth.ToString();
-        JpegQualitySlider.Value = Math.Clamp(s.JpegQuality, 10, 100);
-        JpegQualityText.Text = $"{s.JpegQuality}%";
-        if (!SelectByTag(ImageOutputBox, s.ImageOutput)) ImageOutputBox.SelectedIndex = 0;
+    private void UpdateVisibility()
+    {
+        var s = _owner.Settings;
+        CustomAiRow.Visibility = s.AiTool == "custom" ? Visibility.Visible : Visibility.Collapsed;
+        CustomWebRow.Visibility = s.WebEngine == "custom" ? Visibility.Visible : Visibility.Collapsed;
+        ClaudeAppBox.Visibility = s.AiTool == "claude" ? Visibility.Visible : Visibility.Collapsed;
+        AiHint.Text = s.AiTool switch
+        {
+            "gemini" => "Gemini can't receive text from a link, so your question is copied - just paste it in (Ctrl+V).",
+            "custom" => "Put {query} in the link where your question should go.",
+            _ => $"Ctrl+Enter in the search box (or the \"Ask {WebTools.Ai(s).Name}\" row) opens a new chat with your question.",
+        };
+        foreach (var box in new[] { CpuBox, MemoryBox, GpuBox, DiskBox, NetworkBox, BatteryBox, UptimeBox, CompactStatsBox })
+            box.IsEnabled = s.ShowSystemInfo;
+        foreach (var box in new[] { ShelfAutoOpenBox, ShelfRememberBox, ShelfThumbsBox, ShelfRemoveBox, ShelfScratchBox, ShelfScreenshotsBox })
+            box.IsEnabled = s.ShelfPage;
+        ShelfPeekBox.IsEnabled = s.ShelfPage && s.ShelfScreenshots;
+        foreach (var box in new Control[] { WeatherPlaceBox, WeatherFindButton, WeatherUnitBox })
+            box.IsEnabled = s.WeatherEnabled;
+        foreach (var box in new Control[] { CalendarUrlsBox, CalendarCountdownBox })
+            box.IsEnabled = s.CalendarEnabled;
+        foreach (var box in new Control[] { WeekNumberBox, DayProgressModeBox, WorkStartBox, WorkEndBox })
+            box.IsEnabled = s.DayProgress;
+        WorkStartBox.IsEnabled = WorkEndBox.IsEnabled = s.DayProgress && s.DayProgressMode == "work";
+        foreach (var box in new Control[] { ToggleMicBox, ToggleDndBox, ToggleThemeBox, ToggleBluetoothBox, ToggleAwakeBox, ToggleLockBox })
+            box.IsEnabled = s.QuickToggles;
+        foreach (var box in new Control[] { ReminderSoundBox, ReminderFullscreenBox, ReminderCountdownBox })
+            box.IsEnabled = s.RemindersEnabled;
+        MusicServiceHint.Text = s.MusicService switch
+        {
+            "spotify" => "Spotify gets Like (adds to / removes from Liked Songs) and Smart Shuffle (steps through Shuffle → Smart Shuffle → off, Premium only). These use Spotify's own shortcuts, so the Spotify window flashes to the front for a moment - it needs to be open, not only in the tray.",
+            "auto" => "Shows whatever's playing. If Spotify is playing, its Like and Smart Shuffle buttons appear too.",
+            _ => "This service gets the standard controls plus a button to open it. Windows doesn't offer a way to like songs in it from outside the app.",
+        } + " When more than one app is playing, the notch shows your chosen service first.";
     }
 
     private static bool SelectByTag(ComboBox box, string tag)
@@ -140,68 +175,42 @@ public partial class SettingsWindow : Window
         if (_loading) return;
         var s = _owner.Settings;
 
-        s.Handheld = HandheldBox.IsChecked == true;
-        if (DevicePicker.Children.OfType<RadioButton>().FirstOrDefault(r => r.IsChecked == true)?.Tag is string device)
-            s.HandheldDevice = device;
-        string handheldKey = HandheldHotkeyBox.Text.Trim();
-        if (KeySender.TryParseHotkey(handheldKey, out _, out _)) s.AllyHotkey = handheldKey;
-        HandheldHotkeyBox.Text = s.AllyHotkey;
-        ShowDeviceTip();
-        s.AutoProfile = AutoProfileBox.IsChecked == true;
         s.StartWithWindows = StartWithWindowsBox.IsChecked == true;
         s.HideInFullscreen = HideInFullscreenBox.IsChecked == true;
-        s.Size = SelectedTag(SizeBox) ?? "normal";
-        s.Monitor = SelectedTag(MonitorBox) ?? "primary";
-
-        s.ShowNowPlaying = NowPlayingBox.IsChecked == true;
-        s.ShowWeather = WeatherBox.IsChecked == true;
-        s.ShowBattery = BatteryBox.IsChecked == true;
-        s.ShowSoundBars = SoundBarsBox.IsChecked == true;
-        s.PeekOnTrackChange = PeekBox.IsChecked == true;
-
-        s.VolumePopup = VolumeBox.IsChecked == true;
-        s.BrightnessPopup = BrightnessBox.IsChecked == true;
-        s.ChargingPopup = ChargingBox.IsChecked == true;
-        s.PrivacyDots = PrivacyBox.IsChecked == true;
-        s.BatteryFullPopup = BatteryFullBox.IsChecked == true;
-        s.BatterySaverPopup = BatterySaverBox.IsChecked == true;
-        s.ScreenshotPopup = ScreenshotPopupBox.IsChecked == true;
-        s.ScreenshotToShelf = ScreenshotShelfBox.IsChecked == true;
-        ScreenshotShelfBox.IsEnabled = s.ScreenshotPopup;
-        s.RainPopup = RainPopupBox.IsChecked == true;
-        if (int.TryParse(SelectedTag(RainLeadBox), out int lead)) s.RainLeadMinutes = lead;
-
-        s.ClipboardHistory = ClipboardBox.IsChecked == true;
-        s.TimerSound = TimerSoundBox.IsChecked == true;
-        s.ScreenshotMethod = SelectedTag(ScreenshotBox) ?? "snipping";
-        s.ShowBubbles = BubblesBox.IsChecked == true;
-
-        // Quit protection and keep awake
-        s.QuitProtection = QuitProtectBox.IsChecked == true;
-        s.QuitProtectCtrlW = QuitCtrlWBox.IsChecked == true;
-        QuitCtrlWBox.IsEnabled = s.QuitProtection;
-        if (int.TryParse(SelectedTag(QuitHoldBox), out int hold)) s.QuitHoldMs = hold;
-        s.QuitOnlyApps = QuitOnlyBox.Text.Trim();
-        s.QuitIgnoreApps = QuitIgnoreBox.Text.Trim();
-        s.StayAwakeApps = AwakeAppsBox.Text.Trim();
-        s.StayAwakeScreenOn = AwakeScreenBox.IsChecked == true;
-
-        // Command bar and recording
-        string searchKey = SearchHotkeyBox.Text.Trim();
-        if (searchKey.Length == 0 || KeySender.TryParseHotkey(searchKey, out _, out _)) s.SearchHotkey = searchKey;
-        SearchHotkeyBox.Text = s.SearchHotkey;
-        s.SearchFolders = SearchFoldersBox.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                               .Select(f => f.Trim('"')).Where(f => f.Length > 0).ToList();
-        if (int.TryParse(SelectedTag(RecordFpsBox), out int fps)) s.RecordFps = fps;
-        s.RecordCursor = RecordCursorBox.IsChecked == true;
-
-        // Updates
+        s.ShowSeconds = SecondsBox.IsChecked == true;
+        s.ShowQuote = ShowQuoteBox.IsChecked == true;
         s.AutoUpdate = AutoUpdateBox.IsChecked == true;
         string repo = UpdateRepoBox.Text.Trim().Replace("https://github.com/", "").Trim('/');
         if (System.Text.RegularExpressions.Regex.IsMatch(repo, @"^[\w.-]+/[\w.-]+$")) s.UpdateRepo = repo;
         UpdateRepoBox.Text = s.UpdateRepo;
+        s.WeatherEnabled = WeatherBox.IsChecked == true;
+        bool fahrenheit = SelectedTag(WeatherUnitBox) == "f";
+        if (fahrenheit != s.WeatherFahrenheit)
+        {
+            s.WeatherFahrenheit = fahrenheit;
+            _owner.ReloadWeather();
+        }
+        s.CalendarEnabled = CalendarBox.IsChecked == true;
+        s.CalendarUrls = CalendarUrlsBox.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                             .Where(u => u.Length > 0).ToList();
+        s.CalendarCountdown = CalendarCountdownBox.IsChecked == true;
+        s.DayProgress = DayProgressBox.IsChecked == true;
+        s.ShowWeekNumber = WeekNumberBox.IsChecked == true;
+        s.DayProgressMode = SelectedTag(DayProgressModeBox) ?? "work";
+        if (ReminderParser.TryTime(WorkStartBox.Text, out var ws)) s.WorkStart = $"{(int)ws.TotalHours:00}:{ws.Minutes:00}";
+        if (ReminderParser.TryTime(WorkEndBox.Text, out var we)) s.WorkEnd = $"{(int)we.TotalHours:00}:{we.Minutes:00}";
+        WorkStartBox.Text = s.WorkStart;
+        WorkEndBox.Text = s.WorkEnd;
+        s.QuickToggles = QuickTogglesBox.IsChecked == true;
+        s.ToggleMic = ToggleMicBox.IsChecked == true;
+        s.ToggleDnd = ToggleDndBox.IsChecked == true;
+        s.ToggleTheme = ToggleThemeBox.IsChecked == true;
+        s.ToggleBluetooth = ToggleBluetoothBox.IsChecked == true;
+        s.ToggleAwake = ToggleAwakeBox.IsChecked == true;
+        s.ToggleLock = ToggleLockBox.IsChecked == true;
+        s.Size = SelectedTag(SizeBox) ?? "normal";
+        s.Monitor = SelectedTag(MonitorBox) ?? "primary";
 
-        // Theme
         if (MainWindow.TryParseColour(AccentHexBox.Text, out var accent))
             s.AccentColor = $"#{accent.R:X2}{accent.G:X2}{accent.B:X2}";
         AccentHexBox.Text = s.AccentColor;
@@ -210,98 +219,48 @@ public partial class SettingsWindow : Window
         s.NotchWidth = SelectedTag(NotchWidthBox) ?? "normal";
         ShowAccent();
 
-        // System stats
-        s.ShowStats = StatsBox.IsChecked == true;
-        s.StatsCpu = StatsCpuBox.IsChecked == true;
-        s.StatsRam = StatsRamBox.IsChecked == true;
-        s.StatsNet = StatsNetBox.IsChecked == true;
+        string key = HotkeyBox.Text.Trim();
+        if (key.Length == 0 || Hotkeys.TryParse(key, out _, out _)) s.SearchHotkey = key;
+        HotkeyBox.Text = s.SearchHotkey;
+        s.UseWindowsSearch = WindowsSearchBox.IsChecked == true;
+        s.SearchFolders = FoldersBox.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                         .Select(f => f.Trim('"')).Where(f => f.Length > 0).ToList();
+        s.AiTool = SelectedTag(AiBox) ?? "claude";
+        s.WebEngine = SelectedTag(EngineBox) ?? "google";
+        s.CustomAiUrl = CustomAiBox.Text.Trim();
+        s.CustomWebUrl = CustomWebBox.Text.Trim();
+        s.ClaudeDesktopApp = ClaudeAppBox.IsChecked == true;
 
-        // Mic
-        string hotkey = MicHotkeyBox.Text.Trim();
-        if (hotkey.Length == 0 || KeySender.TryParseHotkey(hotkey, out _, out _)) s.MicHotkey = hotkey;
-        MicHotkeyBox.Text = s.MicHotkey;
-        s.MicShowDot = MicDotBox.IsChecked == true;
-        s.MicPopup = MicPopupBox.IsChecked == true;
+        s.ShowSystemInfo = ShowStatsBox.IsChecked == true;
+        s.CompactStats = CompactStatsBox.IsChecked == true;
+        s.VolumePage = VolumePageBox.IsChecked == true;
+        s.MusicPage = MusicPageBox.IsChecked == true;
+        s.MusicService = SelectedTag(MusicServiceBox) ?? "auto";
+        s.MusicExtras = MusicExtrasBox.IsChecked == true;
+        s.ShowBubbles = BubblesBox.IsChecked == true;
+        s.ShelfPage = ShelfPageBox.IsChecked == true;
+        s.ShelfAutoOpen = ShelfAutoOpenBox.IsChecked == true;
+        s.ShelfRemember = ShelfRememberBox.IsChecked == true;
+        s.ShelfThumbnails = ShelfThumbsBox.IsChecked == true;
+        s.ShelfRemoveAfterDrag = ShelfRemoveBox.IsChecked == true;
+        s.ShelfScratch = ShelfScratchBox.IsChecked == true;
+        s.ShelfScreenshots = ShelfScreenshotsBox.IsChecked == true;
+        s.ShelfScreenshotPeek = ShelfPeekBox.IsChecked == true;
+        s.RemindersEnabled = RemindersBox.IsChecked == true;
+        s.ReminderSound = ReminderSoundBox.IsChecked == true;
+        s.ReminderOverFullscreen = ReminderFullscreenBox.IsChecked == true;
+        s.ReminderCountdownMinutes = int.TryParse(SelectedTag(ReminderCountdownBox), out int cd) ? cd : 60;
+        s.StatCpu = CpuBox.IsChecked == true;
+        s.StatMemory = MemoryBox.IsChecked == true;
+        s.StatGpu = GpuBox.IsChecked == true;
+        s.StatDisk = DiskBox.IsChecked == true;
+        s.StatNetwork = NetworkBox.IsChecked == true;
+        s.StatBattery = BatteryBox.IsChecked == true;
+        s.StatUptime = UptimeBox.IsChecked == true;
 
-        // Notes and calculator
-        s.NotesTextSize = SelectedTag(NotesSizeBox) ?? "normal";
-        s.CalcCurrency = CalcCurrencyBox.IsChecked == true;
-        s.CalcCopyOnEnter = CalcCopyBox.IsChecked == true;
-        if (int.TryParse(SelectedTag(CalcDecimalsBox), out int decimals)) s.CalcDecimals = decimals;
-
-        // Image actions
-        s.ImageActions = ImageActionsBox.IsChecked == true;
-        if (int.TryParse(ResizeWidthBox.Text.Trim().TrimEnd('p', 'x', 'P', 'X'), out int width) && width is >= 16 and <= 20000)
-            s.ImageResizeWidth = width;
-        ResizeWidthBox.Text = s.ImageResizeWidth.ToString();
-        s.JpegQuality = (int)JpegQualitySlider.Value;
-        s.ImageOutput = SelectedTag(ImageOutputBox) ?? "beside";
-
+        UpdateVisibility();
         _owner.SettingsChanged();
-    }
-
-    // ---------- Features ----------
-
-    // FEATURES.txt is built into the exe, so the list always matches the version you're running
-    private static string LoadFeatures()
-    {
-        try
-        {
-            using var stream = typeof(SettingsWindow).Assembly.GetManifestResourceStream("WinNotch.FEATURES.txt");
-            if (stream == null) return "";
-            using var reader = new System.IO.StreamReader(stream);
-            return reader.ReadToEnd().TrimEnd();
-        }
-        catch
-        {
-            return "";
-        }
-    }
-
-    private void OpenGitHub_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
-                $"https://github.com/{_owner.Settings.UpdateRepo}") { UseShellExecute = true });
-        }
-        catch { }
-    }
-
-    // ---------- Handheld ----------
-
-    // One choice per handheld, plus "work it out for me"
-    private void BuildDevicePicker()
-    {
-        DevicePicker.Children.Clear();
-        var detected = Handhelds.Detect();
-        var choices = new List<(string Key, string Label)>
-        {
-            ("auto", detected != null ? $"Detect automatically (this is a {detected.Name})" : "Detect automatically (no handheld found)"),
-        };
-        choices.AddRange(Handhelds.All.Select(d => (d.Key, d.Name)));
-
-        foreach (var (key, label) in choices)
-        {
-            var radio = new RadioButton
-            {
-                Content = label,
-                Tag = key,
-                GroupName = "Handheld",
-                IsChecked = string.Equals(_owner.Settings.HandheldDevice, key, StringComparison.OrdinalIgnoreCase),
-            };
-            radio.Checked += Changed;
-            DevicePicker.Children.Add(radio);
-        }
-        ShowDeviceTip();
-    }
-
-    private void ShowDeviceTip()
-    {
-        var s = _owner.Settings;
-        DeviceCard.IsEnabled = s.Handheld;
-        DeviceCard.Opacity = s.Handheld ? 1 : 0.5;
-        DeviceTip.Text = Handhelds.Current(s).ButtonTip.Replace("Ctrl+Alt+N", s.AllyHotkey);
+        DrawBubblePreview(); // picks up a new notch style
     }
 
     // ---------- Theme ----------
@@ -331,21 +290,13 @@ public partial class SettingsWindow : Window
         }
     }
 
-    // Outlines the chosen swatch and shows the colour beside the hex box
-    /// <summary>Recolours this window (tabs, tick boxes, bubble preview) with the accent colour.</summary>
-    private void ApplyAccentToWindow()
-    {
-        if (!MainWindow.TryParseColour(_owner.Settings.AccentColor, out var c)) c = Color.FromRgb(0xFF, 0x9F, 0x0A);
-        if (Resources["Accent"] is not SolidColorBrush b || b.Color != c)
-            Resources["Accent"] = new SolidColorBrush(c);
-        DrawBubblePreview(); // also picks up a new notch style
-    }
-
+    // Outlines the chosen swatch, shows the colour by the hex box, and recolours this window
     private void ShowAccent()
     {
-        ApplyAccentToWindow();
         string current = _owner.Settings.AccentColor;
-        if (MainWindow.TryParseColour(current, out var c)) AccentPreview.Background = new SolidColorBrush(c);
+        if (!MainWindow.TryParseColour(current, out var c)) c = Color.FromRgb(0xFF, 0x9F, 0x0A);
+        AccentPreview.Background = new SolidColorBrush(c);
+        if (Resources["Accent"] is not SolidColorBrush b || b.Color != c) Resources["Accent"] = new SolidColorBrush(c);
         foreach (var child in AccentSwatches.Children.OfType<Button>())
         {
             if (child.Content is System.Windows.Shapes.Ellipse e)
@@ -357,29 +308,73 @@ public partial class SettingsWindow : Window
         }
     }
 
-    // Enter in a text field applies it straight away
-    private void Field_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-    {
-        if (e.Key == System.Windows.Input.Key.Enter) Changed(sender, e);
-    }
+    // ---------- Disk tile drives ----------
 
-    private void JpegQuality_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    private void BuildDriveChoices(IEnumerable<string>? extra = null)
     {
-        if (JpegQualityText != null) JpegQualityText.Text = $"{(int)e.NewValue}%";
-        Changed(sender, e);
-    }
-
-    private void OpenNotes_Click(object sender, RoutedEventArgs e)
-    {
-        string file = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinNotch", "notes.txt");
-        try
+        var chosen = _owner.Settings.DiskDrives.Select(Letter).Where(l => l.Length == 1).ToList();
+        var letters = new SortedSet<string>(chosen);
+        var labels = new Dictionary<string, string>();
+        foreach (var d in System.IO.DriveInfo.GetDrives())
         {
-            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(file)!);
-            if (!System.IO.File.Exists(file)) System.IO.File.WriteAllText(file, "");
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file) { UseShellExecute = true });
+            try
+            {
+                if (!d.IsReady) continue;
+                string l = Letter(d.Name);
+                letters.Add(l);
+                string name = string.IsNullOrWhiteSpace(d.VolumeLabel) ? d.DriveType.ToString() : d.VolumeLabel;
+                labels[l] = $"{l}:  {name} · {d.TotalSize / 1_073_741_824.0:0} GB";
+            }
+            catch { }
         }
-        catch { }
+        foreach (var l in extra ?? Array.Empty<string>()) letters.Add(l);
+
+        DrivesPanel.Children.Clear();
+        foreach (var l in letters)
+        {
+            var box = new CheckBox
+            {
+                Content = labels.TryGetValue(l, out var text) ? text : $"{l}:  (not connected)",
+                Tag = l,
+                IsChecked = chosen.Contains(l) || (extra?.Contains(l) ?? false),
+                Margin = new Thickness(0, 5, 22, 5),
+            };
+            box.Click += (_, _) => SaveDrives();
+            DrivesPanel.Children.Add(box);
+        }
     }
+
+    private static string Letter(string drive) => drive.Trim().TrimEnd(':', '\\').ToUpperInvariant();
+
+    private void SaveDrives()
+    {
+        _owner.Settings.DiskDrives = DrivesPanel.Children.OfType<CheckBox>()
+            .Where(b => b.IsChecked == true).Select(b => (string)b.Tag).ToList();
+        _owner.SettingsChanged();
+    }
+
+    private void AddDrive_Click(object sender, RoutedEventArgs e)
+    {
+        string l = Letter(AddDriveBox.Text);
+        AddDriveBox.Text = "";
+        if (l.Length != 1 || !char.IsLetter(l[0])) return;
+        BuildDriveChoices(new[] { l });
+        SaveDrives();
+    }
+
+    private void AddDriveBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter) AddDrive_Click(sender, e);
+    }
+
+    private void Field_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter) Changed(sender, e);
+    }
+
+    private void Done_Click(object sender, RoutedEventArgs e) => Close();
+
+    // ---------- Updates and About ----------
 
     private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
     {
@@ -388,50 +383,56 @@ public partial class SettingsWindow : Window
         finally { CheckUpdatesButton.IsEnabled = true; }
     }
 
-    // ---------- Keep awake: add an app that's open now ----------
-
-    private void AwakeAddBox_DropDownOpened(object? sender, EventArgs e)
-    {
-        var names = System.Diagnostics.Process.GetProcesses()
-            .Where(p => { try { return p.MainWindowHandle != IntPtr.Zero; } catch { return false; } })
-            .Select(p => p.ProcessName)
-            .Where(n => !n.Equals("WinNotch", StringComparison.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        AwakeAddBox.Items.Clear();
-        foreach (var n in names) AwakeAddBox.Items.Add(n);
-    }
-
-    private void AwakeAddBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_loading || AwakeAddBox.SelectedItem is not string name) return;
-        var list = AwakeAppsBox.Text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-        if (!list.Contains(name, StringComparer.OrdinalIgnoreCase)) list.Add(name);
-        AwakeAppsBox.Text = string.Join(", ", list);
-        AwakeAddBox.SelectedItem = null;
-        Changed(sender, e);
-    }
-
-    private void OpenScripts_Click(object sender, RoutedEventArgs e) => OpenFolder(MainWindow.ScriptsFolder);
-
-    private void OpenRecordings_Click(object sender, RoutedEventArgs e) =>
-        OpenFolder(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "WinNotch Recordings"));
-
-    private static void OpenFolder(string folder)
+    // FEATURES.txt is built into the exe, so the list always matches the version you're running
+    private static string LoadFeatures()
     {
         try
         {
-            System.IO.Directory.CreateDirectory(folder);
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(folder) { UseShellExecute = true });
+            using var stream = typeof(SettingsWindow).Assembly.GetManifestResourceStream("WinNotch.FEATURES.txt");
+            if (stream == null) return "";
+            using var reader = new System.IO.StreamReader(stream);
+            return reader.ReadToEnd().TrimEnd();
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private void OpenGitHub_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+                $"https://github.com/{_owner.Settings.UpdateRepo}") { UseShellExecute = true });
         }
         catch { }
     }
 
-    private void EditActions_Click(object sender, RoutedEventArgs e) => _owner.OpenActionsFile();
-
-    private void Done_Click(object sender, RoutedEventArgs e) => Close();
-
-    // Shuts down WinNotch completely (same as Close WinNotch in the tray menu)
     private void QuitApp_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+
+    private void ClearShelf_Click(object sender, RoutedEventArgs e) => _owner.ClearShelf();
+
+    private void OpenScratch_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.IO.Directory.CreateDirectory(AppSettings.Folder);
+            if (!System.IO.File.Exists(MainWindow.ScratchFile)) System.IO.File.WriteAllText(MainWindow.ScratchFile, "");
+            WebTools.Open(MainWindow.ScratchFile);
+        }
+        catch { }
+    }
+
+    private void HardRestart_Click(object sender, RoutedEventArgs e)
+    {
+        _owner.Settings.Save();
+        App.HardRestart();
+    }
+
+    private void RestartApp_Click(object sender, RoutedEventArgs e)
+    {
+        _owner.Settings.Save();
+        App.Restart();
+    }
 }

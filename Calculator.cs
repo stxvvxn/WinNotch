@@ -18,7 +18,7 @@ public static class Calculator
 
     public static CalcAnswer? Evaluate(string input, int decimals)
     {
-        string text = input.Trim();
+        string text = Wordy(input.Trim());
         if (text.Length == 0) return null;
 
         if (TryConvertUnits(text, decimals) is { } converted) return converted;
@@ -27,6 +27,30 @@ public static class Calculator
             return Answer(value, decimals, "", "");
 
         return null;
+    }
+
+    /// <summary>
+    /// Turns typed-out maths into symbols: "what is 12 times 4?" → "12 * 4",
+    /// "square root of 144" → "sqrt(144)", "5 squared" → "5^2", "2 to the power of 8" → "2^8".
+    /// </summary>
+    public static string Wordy(string text)
+    {
+        string t = " " + text.Trim().TrimEnd('?', '=', '.', '!').ToLowerInvariant() + " ";
+        foreach (var lead in new[] { " what is ", " what's ", " whats ", " calculate ", " work out ", " solve ", " how much is ", " = " })
+            if (t.StartsWith(lead)) t = " " + t[lead.Length..];
+        t = Regex.Replace(t, @"\bsquare root of\s+([\d.,]+|\([^)]*\))", "sqrt($1)");
+        t = Regex.Replace(t, @"\bcube root of\s+([\d.,]+|\([^)]*\))", "cbrt($1)");
+        t = Regex.Replace(t, @"\bsqrt\s+of\s+", "sqrt ");
+        t = Regex.Replace(t, @"\s+squared\b", "^2");
+        t = Regex.Replace(t, @"\s+cubed\b", "^3");
+        t = Regex.Replace(t, @"\s+to the power of\s+", "^");
+        t = Regex.Replace(t, @"\s+(multiplied by|times)\s+", " * ");
+        t = Regex.Replace(t, @"\s+(divided by|over)\s+", " / ");
+        t = Regex.Replace(t, @"\s+plus\s+", " + ");
+        t = Regex.Replace(t, @"\s+(minus|take away)\s+", " - ");
+        t = Regex.Replace(t, @"\s+percent\b", "%");
+        t = Regex.Replace(t, @"(\d)\s*x\s*(\d)", "$1*$2"); // 3x4 or 3 x 4
+        return t.Trim();
     }
 
     private static CalcAnswer Answer(double value, int decimals, string unit, string detail)
