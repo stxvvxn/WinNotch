@@ -376,6 +376,9 @@ public partial class MainWindow : Window
             EndNav();
             if (_overlayActive) EndOverlaySoon(); // opened over a game: hide again once closed
             EndTextEntry();
+            _hintFor = null;
+            TopHint.BeginAnimation(OpacityProperty, null);
+            TopHint.Opacity = 0;
         }
 
         // Closing the notch also closes any open tool panel

@@ -359,6 +359,7 @@ public partial class MainWindow
         }
         more.Visibility = Vis(overflow);
         TopButtonsPanel.Children.Add(more);
+        foreach (var b in all) AttachTopHint(b);
 
         // A hidden tool shouldn't stay open
         if (_openTool != null && _openTool != "more" && !_settings.TopButtonShown(_openTool))

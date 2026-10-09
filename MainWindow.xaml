@@ -344,6 +344,16 @@
                            TextTrimming="CharacterEllipsis"/>
             </Grid>
 
+            <!-- Little label that drops down under a top button while you hover it -->
+            <Border x:Name="TopHint" VerticalAlignment="Top" HorizontalAlignment="Left" Opacity="0"
+                    IsHitTestVisible="False" Background="#262626" CornerRadius="7" Padding="9,4"
+                    BorderBrush="#33FFFFFF" BorderThickness="1" MaxWidth="280">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="TopHintMove"/>
+                </Border.RenderTransform>
+                <TextBlock x:Name="TopHintText" Foreground="White" FontSize="11" TextWrapping="Wrap"/>
+            </Border>
+
             <!-- ============ Status (top-right, always visible) ============ -->
             <!-- Today's date, always shown under the buttons at the top of the open notch -->
             <TextBlock x:Name="DateText" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20,34,20,0"
