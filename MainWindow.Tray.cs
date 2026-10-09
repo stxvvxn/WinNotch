@@ -1,18 +1,12 @@
-using System.Windows;
 using Forms = System.Windows.Forms;
 
 namespace WinNotch;
 
-// System tray icon: right-click for Settings / Hide notch / Close, left-click to hide or show the notch
+// Tray icon: right-click for Settings / Hide notch / Close; left-click hides or shows the notch
 public partial class MainWindow
 {
     private Forms.NotifyIcon? _tray;
     private Forms.ToolStripMenuItem? _trayHideItem;
-
-    private bool _userHidden;    // hidden from the tray or right-click menu
-    private bool _hiddenForSnip; // briefly hidden while taking a screenshot
-
-    private bool NotchHidden => (_hiddenForFullscreen && !_overlayActive) || _userHidden || _hiddenForSnip;
 
     private void InitTray()
     {
@@ -29,7 +23,7 @@ public partial class MainWindow
             Icon = LoadTrayIcon(),
             Text = "WinNotch",
             ContextMenuStrip = menu,
-            Visible = true
+            Visible = true,
         };
         _tray.MouseClick += (_, e) =>
         {
@@ -37,10 +31,22 @@ public partial class MainWindow
         };
     }
 
+    private void ToggleNotchHidden()
+    {
+        _userHidden = !_userHidden;
+        ApplyNotchVisibility();
+    }
+
+    private void UpdateTrayText()
+    {
+        if (_trayHideItem != null) _trayHideItem.Text = _userHidden ? "Show notch" : "Hide notch";
+        if (_tray != null) _tray.Text = _userHidden ? "WinNotch (hidden) - click to show" : "WinNotch";
+    }
+
     private void DisposeTray()
     {
         if (_tray == null) return;
-        _tray.Visible = false; // otherwise a "ghost" icon lingers until you hover over it
+        _tray.Visible = false;
         _tray.Dispose();
         _tray = null;
     }
@@ -49,46 +55,10 @@ public partial class MainWindow
     {
         try
         {
-            // notch.ico is built into the exe; pick the small (16px-ish) size the tray uses
             using var stream = typeof(MainWindow).Assembly.GetManifestResourceStream("WinNotch.notch.ico");
             if (stream != null) return new System.Drawing.Icon(stream, Forms.SystemInformation.SmallIconSize);
         }
         catch { }
-
-        try
-        {
-            if (Environment.ProcessPath is { } exe && System.Drawing.Icon.ExtractAssociatedIcon(exe) is { } icon)
-                return icon;
-        }
-        catch { }
-
         return System.Drawing.SystemIcons.Application;
-    }
-
-    private void HideNotch_Click(object sender, RoutedEventArgs e) => ToggleNotchHidden();
-
-    private void ToggleNotchHidden()
-    {
-        _userHidden = !_userHidden;
-        ApplyNotchVisibility();
-    }
-
-    // The notch is hidden if you've hidden it, something is fullscreen, or a screenshot is being taken
-    private void ApplyNotchVisibility()
-    {
-        if (NotchHidden)
-        {
-            SetExpanded(false);
-            EndHud(immediate: true);
-            Pill.Visibility = Visibility.Hidden;
-        }
-        else if (Pill.Visibility != Visibility.Visible)
-        {
-            Pill.Visibility = Visibility.Visible;
-            PositionWindow(); // also puts the notch back on top
-        }
-
-        if (_trayHideItem != null) _trayHideItem.Text = _userHidden ? "Show notch" : "Hide notch";
-        if (_tray != null) _tray.Text = _userHidden ? "WinNotch (hidden) - click to show" : "WinNotch";
     }
 }

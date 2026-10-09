@@ -1,0 +1,86 @@
+namespace WinNotch;
+
+/// <summary>Quote of the day for the open notch: the same quote all day, a new one tomorrow.</summary>
+public static class Quotes
+{
+    private static readonly (string Text, string Author)[] All =
+    {
+        ("The secret of getting ahead is getting started.", "Mark Twain"),
+        ("Well done is better than well said.", "Benjamin Franklin"),
+        ("It always seems impossible until it's done.", "Nelson Mandela"),
+        ("Simplicity is the ultimate sophistication.", "Leonardo da Vinci"),
+        ("Whatever you are, be a good one.", "Abraham Lincoln"),
+        ("Do what you can, with what you have, where you are.", "Theodore Roosevelt"),
+        ("Life is really simple, but we insist on making it complicated.", "Confucius"),
+        ("It does not matter how slowly you go as long as you do not stop.", "Confucius"),
+        ("The journey of a thousand miles begins with one step.", "Lao Tzu"),
+        ("Knowing yourself is the beginning of all wisdom.", "Aristotle"),
+        ("We are what we repeatedly do.", "Will Durant"),
+        ("Happiness depends upon ourselves.", "Aristotle"),
+        ("The only true wisdom is in knowing you know nothing.", "Socrates"),
+        ("Waste no more time arguing what a good man should be. Be one.", "Marcus Aurelius"),
+        ("You have power over your mind, not outside events. Realise this, and you will find strength.", "Marcus Aurelius"),
+        ("Very little is needed to make a happy life.", "Marcus Aurelius"),
+        ("Luck is what happens when preparation meets opportunity.", "Seneca"),
+        ("While we wait for life, life passes.", "Seneca"),
+        ("Difficulties strengthen the mind, as labour does the body.", "Seneca"),
+        ("First say to yourself what you would be; and then do what you have to do.", "Epictetus"),
+        ("No great thing is created suddenly.", "Epictetus"),
+        ("Energy and persistence conquer all things.", "Benjamin Franklin"),
+        ("Lost time is never found again.", "Benjamin Franklin"),
+        ("An investment in knowledge pays the best interest.", "Benjamin Franklin"),
+        ("If you are going through hell, keep going.", "Winston Churchill"),
+        ("Success is not final, failure is not fatal: it is the courage to continue that counts.", "Winston Churchill"),
+        ("Imagination is more important than knowledge.", "Albert Einstein"),
+        ("In the middle of difficulty lies opportunity.", "Albert Einstein"),
+        ("Life is like riding a bicycle. To keep your balance you must keep moving.", "Albert Einstein"),
+        ("Nothing in life is to be feared, it is only to be understood.", "Marie Curie"),
+        ("Be less curious about people and more curious about ideas.", "Marie Curie"),
+        ("I have not failed. I've just found 10,000 ways that won't work.", "Thomas Edison"),
+        ("Genius is one percent inspiration and ninety-nine percent perspiration.", "Thomas Edison"),
+        ("Opportunity is missed by most people because it is dressed in overalls and looks like work.", "Thomas Edison"),
+        ("Quality is never an accident; it is always the result of intelligent effort.", "John Ruskin"),
+        ("Great things are done by a series of small things brought together.", "Vincent van Gogh"),
+        ("What would life be if we had no courage to attempt anything?", "Vincent van Gogh"),
+        ("Not all those who wander are lost.", "J. R. R. Tolkien"),
+        ("Be yourself; everyone else is already taken.", "Oscar Wilde"),
+        ("To live is the rarest thing in the world. Most people exist, that is all.", "Oscar Wilde"),
+        ("It is never too late to be what you might have been.", "George Eliot"),
+        ("Do one thing every day that scares you.", "Eleanor Roosevelt"),
+        ("The future belongs to those who believe in the beauty of their dreams.", "Eleanor Roosevelt"),
+        ("Act as if what you do makes a difference. It does.", "William James"),
+        ("Small opportunities are often the beginning of great enterprises.", "Demosthenes"),
+        ("Fortune favours the bold.", "Virgil"),
+        ("Patience is bitter, but its fruit is sweet.", "Jean-Jacques Rousseau"),
+        ("I think, therefore I am.", "René Descartes"),
+        ("The best way out is always through.", "Robert Frost"),
+        ("In three words I can sum up everything I've learned about life: it goes on.", "Robert Frost"),
+        ("Dwell on the beauty of life. Watch the stars, and see yourself running with them.", "Marcus Aurelius"),
+        ("Action is the foundational key to all success.", "Pablo Picasso"),
+        ("Everything you can imagine is real.", "Pablo Picasso"),
+        ("He who has a why to live can bear almost any how.", "Friedrich Nietzsche"),
+        ("A person who never made a mistake never tried anything new.", "Albert Einstein"),
+        ("The man who moves a mountain begins by carrying away small stones.", "Confucius"),
+        ("Courage is grace under pressure.", "Ernest Hemingway"),
+        ("Keep your face always toward the sunshine, and shadows will fall behind you.", "Walt Whitman"),
+        ("Be kind, for everyone you meet is fighting a hard battle.", "Ian Maclaren"),
+        ("What we think, we become.", "Buddha"),
+        ("Arriving at one goal is the starting point to another.", "John Dewey"),
+        ("To improve is to change; to be perfect is to change often.", "Winston Churchill"),
+        ("The way to get started is to quit talking and begin doing.", "Walt Disney"),
+        ("Tell me and I forget. Teach me and I remember. Involve me and I learn.", "Benjamin Franklin"),
+        ("If opportunity doesn't knock, build a door.", "Milton Berle"),
+        ("Either write something worth reading or do something worth writing.", "Benjamin Franklin"),
+        ("The harder the conflict, the more glorious the triumph.", "Thomas Paine"),
+        ("Change your thoughts and you change your world.", "Norman Vincent Peale"),
+        ("Begin at once to live, and count each separate day as a separate life.", "Seneca"),
+        ("A smooth sea never made a skilled sailor.", "Franklin D. Roosevelt"),
+    };
+
+    public static (string Text, string Author) Today(DateTime day)
+    {
+        // Days since a fixed date, so it changes at midnight and runs through every quote before repeating
+        int n = (int)(day.Date - new DateTime(2024, 1, 1)).TotalDays;
+        return All[((n % All.Length) + All.Length) % All.Length];
+    }
+}

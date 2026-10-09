@@ -2,38 +2,35 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- The Windows 10 SDK version lets us use the system media controls API -->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <UseWPF>true</UseWPF>
+    <!-- Only for the tray icon -->
+    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>WinNotch</AssemblyName>
-    <!-- GitHub sets the real version (1.0.<build number>) when it builds a release -->
-    <Version>1.0.0</Version>
     <RootNamespace>WinNotch</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>notch.ico</ApplicationIcon>
-    <!-- Only used for the system tray icon; its namespaces are kept out of the way below -->
-    <UseWindowsForms>true</UseWindowsForms>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Stop Windows Forms names (Button, Clipboard, Color...) clashing with the WPF ones -->
+    <!-- Keep Windows Forms names (Button, Color...) out of the way of the WPF ones -->
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Built into the exe so the tray icon can use it -->
     <EmbeddedResource Include="notch.ico" LogicalName="WinNotch.notch.ico" />
-    <!-- Shown on the Features tab in Settings -->
+    <!-- Shown on the About tab in Settings -->
     <EmbeddedResource Include="FEATURES.txt" LogicalName="WinNotch.FEATURES.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reads laptop screen brightness changes -->
-    <PackageReference Include="System.Management" Version="9.0.0" />
+    <!-- Searching the whole PC through the Windows Search index -->
+    <PackageReference Include="System.Data.OleDb" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

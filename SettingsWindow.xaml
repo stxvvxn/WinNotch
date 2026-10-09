@@ -190,7 +190,6 @@
 
         <TabControl x:Name="Tabs">
 
-            <!-- ============ General ============ -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -204,53 +203,7 @@
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
                                 <CheckBox x:Name="StartWithWindowsBox" Content="Start with Windows" Click="Changed"/>
-                                <CheckBox x:Name="HideInFullscreenBox" Content="Auto-hide on full screen apps, games and videos" Click="Changed"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="QUIT PROTECTION" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="QuitProtectBox" Content="Hold Alt+F4 or Ctrl+Q to close (a quick press does nothing)" Click="Changed"/>
-                                <CheckBox x:Name="QuitCtrlWBox" Content="Also protect Ctrl+W (closing a tab or window)" Margin="22,5,0,5" Click="Changed"/>
-                                <DockPanel Margin="22,0,0,0">
-                                    <TextBlock Text="Hold for" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="QuitHoldBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
-                                        <ComboBoxItem Content="Half a second" Tag="500"/>
-                                        <ComboBoxItem Content="0.7 seconds" Tag="700"/>
-                                        <ComboBoxItem Content="1 second" Tag="1000"/>
-                                        <ComboBoxItem Content="1.5 seconds" Tag="1500"/>
-                                    </ComboBox>
-                                </DockPanel>
-                                <DockPanel Margin="22,0,0,0">
-                                    <TextBlock Text="Only these apps" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="QuitOnlyBox" Style="{StaticResource Field}" Width="260" HorizontalAlignment="Right"
-                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. chrome, photoshop, winword — leave empty for every app"/>
-                                </DockPanel>
-                                <DockPanel Margin="22,0,0,0">
-                                    <TextBlock Text="Never these apps" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="QuitIgnoreBox" Style="{StaticResource Field}" Width="260" HorizontalAlignment="Right"
-                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. notepad, calc"/>
-                                </DockPanel>
-                                <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,6"
-                                           Text="App names as in Task Manager → Details, without .exe, separated by commas. Leave 'Only these apps' empty to protect everything."/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="KEEP AWAKE" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <DockPanel>
-                                    <TextBlock Text="Don't sleep while these apps are open" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <ComboBox x:Name="AwakeAddBox" Width="150" DockPanel.Dock="Right" Margin="8,5,0,5"
-                                              DropDownOpened="AwakeAddBox_DropDownOpened" SelectionChanged="AwakeAddBox_SelectionChanged"
-                                              ToolTip="Add an app that's open right now"/>
-                                    <TextBox x:Name="AwakeAppsBox" Style="{StaticResource Field}" LostFocus="Changed" KeyDown="Field_KeyDown"
-                                             ToolTip="e.g. obs64, vlc, steam"/>
-                                </DockPanel>
-                                <CheckBox x:Name="AwakeScreenBox" Content="Keep the screen on too" Click="Changed"/>
-                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
-                                           Text="Pick from the list to add an app that's running now, or type names separated by commas."/>
+                                <CheckBox x:Name="HideInFullscreenBox" Content="Hide on full screen apps, games and videos" Click="Changed"/>
                             </StackPanel>
                         </Border>
 
@@ -267,34 +220,34 @@
                                     <TextBox x:Name="UpdateRepoBox" Style="{StaticResource Field}" Width="220" HorizontalAlignment="Right"
                                              LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="owner/repo"/>
                                 </DockPanel>
-                                <TextBlock x:Name="VersionText" Style="{StaticResource Hint}" Margin="0,2,0,6"/>
+                                <TextBlock x:Name="UpdateVersionText" Style="{StaticResource Hint}" Margin="0,2,0,6"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="NOTCH" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Size" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="SizeBox" Width="200" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="Small" Tag="small"/>
+                                        <ComboBoxItem Content="Normal" Tag="normal"/>
+                                        <ComboBoxItem Content="Large" Tag="large"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Show on" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="MonitorBox" Width="200" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed"/>
+                                </DockPanel>
+                                <CheckBox x:Name="SecondsBox" Content="Show seconds on the clock" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
+                                           Text="Closed: the date (DD/MM/YYYY) on the left, the time (24-hour) on the right. Hover to open it."/>
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="APPEARANCE" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="170"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Text="Notch size" VerticalAlignment="Center"/>
-                                <ComboBox x:Name="SizeBox" Grid.Column="1" Margin="0,5" SelectionChanged="Changed">
-                                    <ComboBoxItem Content="Small" Tag="small"/>
-                                    <ComboBoxItem Content="Normal" Tag="normal"/>
-                                    <ComboBoxItem Content="Large" Tag="large"/>
-                                </ComboBox>
-                                <TextBlock Grid.Row="1" Text="Show on" VerticalAlignment="Center"/>
-                                <ComboBox x:Name="MonitorBox" Grid.Row="1" Grid.Column="1" Margin="0,5" SelectionChanged="Changed"/>
-                            </Grid>
-                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
 
             <!-- ============ Theme ============ -->
             <TabItem>
@@ -317,9 +270,9 @@
                                     <TextBox x:Name="AccentHexBox" Style="{StaticResource Field}" Width="110" HorizontalAlignment="Left"
                                              LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. #FF9F0A"/>
                                 </DockPanel>
-                                <CheckBox x:Name="AccentBarsBox" Content="Colour the progress and volume bars too" Click="Changed"/>
+                                <CheckBox x:Name="AccentBarsBox" Content="Colour the usage bars with it too (high usage still shows orange / red)" Click="Changed"/>
                                 <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
-                                           Text="Used for the open tool, timer, controller highlight and switches that are on."/>
+                                           Text="Used for the search box cursor, these Settings and (optionally) the usage bars."/>
                             </StackPanel>
                         </Border>
 
@@ -353,286 +306,374 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ============ Notch ============ -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE737;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
-                        <TextBlock Text="Notch"/>
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Search"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer Style="{StaticResource Page}">
                     <StackPanel>
-                        <TextBlock Text="BUTTONS AT THE TOP" Style="{StaticResource Heading}"/>
+                        <TextBlock Text="SEARCH BOX" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <!-- Preview of the bar as it'll look -->
-                                <Border Background="Black" CornerRadius="0,0,12,12" HorizontalAlignment="Left" Padding="10,6"
-                                        Margin="0,4,0,8" MinWidth="200">
-                                    <StackPanel x:Name="TopButtonsPreview" Orientation="Horizontal"/>
-                                </Border>
-                                <StackPanel x:Name="TopButtonsList"/>
-                                <DockPanel Margin="0,6,0,4">
-                                    <Button Content="Reset order" Click="ResetTopButtons_Click" DockPanel.Dock="Right" Padding="12,4"/>
-                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center"
-                                               Text="Tick to show, drag a row (or use the arrows) to change the order."/>
+                                <DockPanel>
+                                    <TextBlock Text="Shortcut to open it (works everywhere)" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="HotkeyBox" Style="{StaticResource Field}" Width="200" HorizontalAlignment="Right"
+                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. Ctrl+Alt+Space — leave empty for none"/>
                                 </DockPanel>
+                                <CheckBox x:Name="WindowsSearchBox" Content="Search the whole PC using the Windows Search index (fast)" Click="Changed"/>
+                                <TextBlock Text="Also look in these folders (one per line)" Margin="0,8,0,2"/>
+                                <TextBox x:Name="FoldersBox" Style="{StaticResource Field}" AcceptsReturn="True" Height="70"
+                                         VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" LostFocus="Changed"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="AI TOOL" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Ask" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="AiBox" Width="200" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed"/>
+                                </DockPanel>
+                                <DockPanel x:Name="CustomAiRow">
+                                    <TextBlock Text="Custom link" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="CustomAiBox" Style="{StaticResource Field}" LostFocus="Changed" KeyDown="Field_KeyDown"
+                                             ToolTip="Put {query} where the text should go, e.g. https://example.com/chat?q={query}"/>
+                                </DockPanel>
+                                <CheckBox x:Name="ClaudeAppBox" Content="Open Claude in the desktop app when it's installed" Click="Changed"/>
+                                <TextBlock x:Name="AiHint" Style="{StaticResource Hint}" Margin="0,2,0,6"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="WEB SEARCH" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Search with" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="EngineBox" Width="200" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed"/>
+                                </DockPanel>
+                                <DockPanel x:Name="CustomWebRow">
+                                    <TextBlock Text="Custom link" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="CustomWebBox" Style="{StaticResource Field}" LostFocus="Changed" KeyDown="Field_KeyDown"
+                                             ToolTip="Put {query} where the text should go"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
+                                           Text="In the search box: Enter opens the highlighted result, Shift+Enter searches the web, Ctrl+Enter asks the AI tool. Right-click a file to show it in its folder."/>
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="MUSIC" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="NowPlayingBox" Content="Now playing (song, controls, progress)" Click="Changed"/>
-                                <CheckBox x:Name="SoundBarsBox" Content="Animated sound bars while playing" Click="Changed"/>
-                                <CheckBox x:Name="PeekBox" Content="Pop open when the song changes" Click="Changed"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="STATUS ICONS" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="WeatherBox" Content="Weather" Click="Changed"/>
-                                <CheckBox x:Name="BatteryBox" Content="Battery" Click="Changed"/>
-                                <CheckBox x:Name="PrivacyBox" Content="Camera and microphone in-use dots" Click="Changed"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="SYSTEM STATS" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="StatsBox" Content="Show system stats in the open notch" Click="Changed"/>
-                                <StackPanel Orientation="Horizontal" Margin="22,0,0,0">
-                                    <CheckBox x:Name="StatsCpuBox" Content="CPU" Click="Changed" Margin="0,5,18,5"/>
-                                    <CheckBox x:Name="StatsRamBox" Content="Memory" Click="Changed" Margin="0,5,18,5"/>
-                                    <CheckBox x:Name="StatsNetBox" Content="Network speed" Click="Changed"/>
-                                </StackPanel>
-                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
-                                           Text="Replaces the date line when nothing else is showing, and sits under everything else otherwise."/>
-                            </StackPanel>
-                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ============ Pop-ups ============ -->
+
+
+
+            <!-- ============ Home page ============ -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE7E7;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
-                        <TextBlock Text="Pop-ups"/>
+                        <TextBlock Text="&#xE80F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Home page"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer Style="{StaticResource Page}">
                     <StackPanel>
-                        <TextBlock Text="SHOW A POP-UP FOR" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="VolumeBox" Content="Volume" Click="Changed"/>
-                                <CheckBox x:Name="BrightnessBox" Content="Brightness (laptop screens)" Click="Changed"/>
-                                <CheckBox x:Name="ChargingBox" Content="Charger plugged in" Click="Changed"/>
-                                <CheckBox x:Name="BatteryFullBox" Content="Battery fully charged (or reached its charge limit)" Click="Changed"/>
-                                <CheckBox x:Name="BatterySaverBox" Content="Battery saver turned on / off" Click="Changed"/>
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Style="{StaticResource Hint}" Margin="2,12,0,0"
+                                   Text="What shows under the search box on the first page of the open notch. It all steps aside while you're searching."/>
 
-                        <TextBlock Text="SCREENSHOTS" Style="{StaticResource Heading}"/>
+                        <TextBlock Text="QUOTE" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="ScreenshotPopupBox" Content="Pop-up with a thumbnail when you take a screenshot" Click="Changed"/>
-                                <CheckBox x:Name="ScreenshotShelfBox" Content="Put new screenshots on the shelf" Margin="22,5,0,5" Click="Changed"/>
-                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
-                                           Text="Works with Win+Shift+S, PrintScreen, Win+PrintScreen, the Snipping Tool, ShareX and Greenshot. Screenshots only on the clipboard are saved to Pictures\WinNotch Screenshots."/>
-                            </StackPanel>
+                            <CheckBox x:Name="ShowQuoteBox" Content="Quote of the day under the search box" Click="Changed"/>
                         </Border>
 
                         <TextBlock Text="WEATHER" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <CheckBox x:Name="RainPopupBox" Content="Warn me when rain or snow is on the way" Click="Changed"/>
+                                <CheckBox x:Name="WeatherBox" Content="Show the weather (from Open-Meteo, free - no account needed)" Click="Changed"/>
                                 <DockPanel Margin="22,0,0,0">
-                                    <TextBlock Text="How far ahead" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="RainLeadBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
-                                        <ComboBoxItem Content="15 minutes" Tag="15"/>
-                                        <ComboBoxItem Content="30 minutes" Tag="30"/>
-                                        <ComboBoxItem Content="1 hour" Tag="60"/>
-                                        <ComboBoxItem Content="2 hours" Tag="120"/>
+                                    <TextBlock Text="Town" VerticalAlignment="Center" Width="90"/>
+                                    <Button x:Name="WeatherFindButton" Content="Find" DockPanel.Dock="Right" Click="WeatherFind_Click" Margin="8,0,0,0" Padding="16,5"/>
+                                    <TextBox x:Name="WeatherPlaceBox" Style="{StaticResource Field}" KeyDown="WeatherPlaceBox_KeyDown"/>
+                                </DockPanel>
+                                <TextBlock x:Name="WeatherStatus" Style="{StaticResource Hint}" Margin="112,0,0,4"
+                                           Text="Type a town and press Find - add the country if there's more than one, e.g. Newport, Wales"/>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Units" VerticalAlignment="Center" Width="90"/>
+                                    <ComboBox x:Name="WeatherUnitBox" Width="200" HorizontalAlignment="Left" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="°C (Celsius)" Tag="c"/>
+                                        <ComboBoxItem Content="°F (Fahrenheit)" Tag="f"/>
                                     </ComboBox>
                                 </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="CALENDAR" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="CalendarBox" Content="Show what's next in your calendar" Click="Changed"/>
+                                <TextBlock Text="Calendar links (ICS) - one per line" Margin="22,6,0,0"/>
+                                <TextBox x:Name="CalendarUrlsBox" Style="{StaticResource Field}" Margin="22,5,0,5" Height="64"
+                                         AcceptsReturn="True" TextWrapping="NoWrap" VerticalContentAlignment="Top"
+                                         HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" LostFocus="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6">
+                                    <Run Text="Outlook: Settings → Calendar → Shared calendars → Publish a calendar → copy the ICS link."/>
+                                    <LineBreak/>
+                                    <Run Text="Google: Calendar settings → your calendar → Integrate calendar → Secret address in iCal format."/>
+                                    <LineBreak/>
+                                    <Run Text="iCloud: Calendar → share icon → Public Calendar → copy link. The link is private to you - treat it like a password."/>
+                                </TextBlock>
+                                <CheckBox x:Name="CalendarCountdownBox" Content="Count down to the next event on the closed notch (uses the countdown time from the Reminders tab)" Margin="22,5,0,5" Click="Changed"/>
+                                <DockPanel Margin="22,0,0,4">
+                                    <Button Content="Refresh now" Click="CalendarRefresh_Click" HorizontalAlignment="Left" Padding="12,4"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="DAY PROGRESS" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="DayProgressBox" Content="Show how much of the day has gone (a thin bar)" Click="Changed"/>
+                                <CheckBox x:Name="WeekNumberBox" Content="Show the week number" Margin="22,5,0,5" Click="Changed"/>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Measure" VerticalAlignment="Center" Width="90"/>
+                                    <ComboBox x:Name="DayProgressModeBox" Width="200" HorizontalAlignment="Left" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="My working day" Tag="work"/>
+                                        <ComboBoxItem Content="The whole day" Tag="day"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Work hours" VerticalAlignment="Center" Width="90"/>
+                                    <TextBox x:Name="WorkStartBox" Style="{StaticResource Field}" Width="80" LostFocus="Changed" KeyDown="Field_KeyDown"/>
+                                    <TextBlock Text="to" VerticalAlignment="Center" Margin="10,0"/>
+                                    <TextBox x:Name="WorkEndBox" Style="{StaticResource Field}" Width="80" HorizontalAlignment="Left" LostFocus="Changed" KeyDown="Field_KeyDown"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="112,0,0,4" Text="Weekends always show the whole day."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="QUICK TOGGLES" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="QuickTogglesBox" Content="Row of quick toggles (they light up in your accent colour when on)" Click="Changed"/>
+                                <CheckBox x:Name="ToggleMicBox" Content="Mute microphone" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ToggleDndBox" Content="Do not disturb" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ToggleThemeBox" Content="Dark / light mode" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ToggleBluetoothBox" Content="Bluetooth on / off" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ToggleAwakeBox" Content="Keep the PC and screen awake" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ToggleLockBox" Content="Lock the PC" Margin="22,5,0,5" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,6"
+                                           Text="Windows doesn't give apps a proper switch for Do not disturb, so the notch tries Windows' own setting and, if Windows won't take it, opens the notification settings for you. Keep awake lasts until you turn it off or close WinNotch."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="SYSTEM INFO" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="ShowStatsBox" Content="Show system info under the search box" Click="Changed"/>
+                                <CheckBox x:Name="CompactStatsBox" Content="Make it smaller (one line)" Margin="22,5,0,5" Click="Changed"/>
+                                <WrapPanel Margin="22,0,0,4">
+                                    <CheckBox x:Name="CpuBox" Content="CPU" Click="Changed" Margin="0,5,18,5"/>
+                                    <CheckBox x:Name="MemoryBox" Content="Memory" Click="Changed" Margin="0,5,18,5"/>
+                                    <CheckBox x:Name="GpuBox" Content="GPU" Click="Changed" Margin="0,5,18,5"/>
+                                    <CheckBox x:Name="DiskBox" Content="Disk" Click="Changed" Margin="0,5,18,5"/>
+                                    <CheckBox x:Name="NetworkBox" Content="Network" Click="Changed" Margin="0,5,18,5"/>
+                                    <CheckBox x:Name="BatteryBox" Content="Battery" Click="Changed" Margin="0,5,18,5"/>
+                                    <CheckBox x:Name="UptimeBox" Content="Up time" Click="Changed" Margin="0,5,18,5"/>
+                                </WrapPanel>
                                 <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
-                                           Text="Once per shower, using the same forecast as the weather icon (Open-Meteo). Not while it's already raining."/>
+                                           Text="Battery only shows on laptops and handhelds. GPU is the 3D engine use, like Task Manager."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="DISK TILE" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Drives to show - click the disk tile in the notch to flick between them" Margin="0,4,0,2"/>
+                                <WrapPanel x:Name="DrivesPanel" Margin="0,2,0,0"/>
+                                <DockPanel Margin="0,6,0,4">
+                                    <TextBlock Text="Add a drive letter" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <Button Content="Add" Click="AddDrive_Click" DockPanel.Dock="Right" Padding="14,4" Margin="8,0,0,0"/>
+                                    <TextBox x:Name="AddDriveBox" Style="{StaticResource Field}" Width="60" HorizontalAlignment="Left"
+                                             MaxLength="2" KeyDown="AddDriveBox_KeyDown" ToolTip="e.g. F - for a USB drive that isn't plugged in now"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
+                                           Text="Tick the drives you want. Ones that aren't plugged in show as 'Not connected' in the tile."/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ============ Tools ============ -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE90F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
-                        <TextBlock Text="Tools"/>
+                        <TextBlock Text="&#xE8D6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Music"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer Style="{StaticResource Page}">
                     <StackPanel>
-                        <TextBlock Text="TIMER &amp; CLIPBOARD" Style="{StaticResource Heading}"/>
+                        <TextBlock Text="MUSIC PAGE IN THE NOTCH" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <CheckBox x:Name="TimerSoundBox" Content="Play a chime when a timer ends" Click="Changed"/>
-                                <CheckBox x:Name="ClipboardBox" Content="Remember clipboard history (memory only)" Click="Changed"/>
+                                <CheckBox x:Name="MusicPageBox" Content="Music controls page (its own bubble under the open notch)" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
+                                           Text="Artwork, song, artist and album, a progress bar you can click or drag, and shuffle / previous / play / next / repeat. Works with anything that shows in Windows' media controls. Click the app name to switch between apps that are playing."/>
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="SCREENSHOTS" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Use" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                <ComboBox x:Name="ScreenshotBox" Grid.Column="1" Margin="0,5" SelectionChanged="Changed">
-                                    <ComboBoxItem Content="Windows Snipping Tool" Tag="snipping"/>
-                                    <ComboBoxItem Content="ShareX (Ctrl+PrintScreen)" Tag="sharex"/>
-                                </ComboBox>
-                            </Grid>
-                        </Border>
-
-                        <TextBlock Text="COMMAND BAR (SEARCH)" Style="{StaticResource Heading}"/>
+                        <TextBlock Text="YOUR MUSIC SERVICE" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="Shortcut (works everywhere)" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="SearchHotkeyBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
-                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. Ctrl+Alt+Space — leave empty for none"/>
+                                    <TextBlock Text="Service" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="MusicServiceBox" Width="220" HorizontalAlignment="Right" Margin="0,5"
+                                              SelectionChanged="Changed"/>
                                 </DockPanel>
-                                <TextBlock Text="Search files and folders in (one per line)" Margin="0,6,0,2"/>
-                                <TextBox x:Name="SearchFoldersBox" Style="{StaticResource Field}" AcceptsReturn="True" Height="70"
-                                         VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" LostFocus="Changed"/>
-                                <DockPanel Margin="0,4,0,4">
-                                    <Button Content="Open scripts folder" Click="OpenScripts_Click" DockPanel.Dock="Right" Padding="12,4"/>
-                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,0,12,0"
-                                               Text="Finds apps, files, folders and your scripts (.bat, .ps1, .exe, shortcuts…). Also does sums, and offers Ask Claude and web search."/>
+                                <CheckBox x:Name="MusicExtrasBox" Content="Show extra buttons for the service" Click="Changed"/>
+                                <TextBlock x:Name="MusicServiceHint" Style="{StaticResource Hint}" Margin="0,2,0,6"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE767;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Volume"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Style="{StaticResource Page}">
+                    <StackPanel>
+                        <TextBlock Text="VOLUME PAGE IN THE NOTCH" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="VolumePageBox" Content="Volume controls page (its own bubble under the open notch)" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
+                                           Text="Click the speaker bubble under the open notch for the whole-PC volume and a slider and mute button for each app making sound. The date, time and search box stay put."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE7B8;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Shelf"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Style="{StaticResource Page}">
+                    <StackPanel>
+                        <TextBlock Text="SHELF PAGE IN THE NOTCH" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="ShelfPageBox" Content="Shelf: drop files on the notch to keep them, drag them out again" Click="Changed"/>
+                                <CheckBox x:Name="ShelfAutoOpenBox" Content="Open the shelf when a file is dragged onto the notch" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ShelfRememberBox" Content="Keep the shelf when WinNotch restarts" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ShelfThumbsBox" Content="Show previews for pictures" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ShelfRemoveBox" Content="Take things off the shelf once they've been dragged out" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ShelfScreenshotsBox" Content="Put screenshots on the shelf (Snipping Tool, Win+Shift+S, PrintScreen, ShareX)" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ShelfPeekBox" Content="Pop the notch open to show a new screenshot" Margin="44,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ShelfScratchBox" Content="Scratch pad under the shelf (quick notes, saved as you type)" Margin="22,5,0,5" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,6"
+                                           Text="Click the shelf bubble under the open notch to see it. Dragging out works like File Explorer: it moves on the same drive and copies to another - hold Ctrl to copy or Shift to move. Double-click to open, right-click for more."/>
+                                <DockPanel Margin="22,0,0,6">
+                                    <Button Content="Clear the shelf" Click="ClearShelf_Click" HorizontalAlignment="Left" Padding="12,4"/>
+                                    <Button Content="Open scratch pad file" Click="OpenScratch_Click" HorizontalAlignment="Left" Padding="12,4" Margin="8,0,0,0"/>
                                 </DockPanel>
                             </StackPanel>
                         </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
-                        <TextBlock Text="SCREEN RECORDING" Style="{StaticResource Heading}"/>
+            <!-- ============ Reminders ============ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xEA8F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Reminders"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Style="{StaticResource Page}">
+                    <StackPanel>
+                        <TextBlock Text="REMINDERS" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <DockPanel>
-                                    <TextBlock Text="Frames per second" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="RecordFpsBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
-                                        <ComboBoxItem Content="15 (smaller files)" Tag="15"/>
-                                        <ComboBoxItem Content="30" Tag="30"/>
-                                        <ComboBoxItem Content="60 (smooth)" Tag="60"/>
-                                    </ComboBox>
-                                </DockPanel>
-                                <CheckBox x:Name="RecordCursorBox" Content="Show the mouse pointer" Click="Changed"/>
-                                <DockPanel Margin="0,4,0,4">
-                                    <Button Content="Open recordings" Click="OpenRecordings_Click" DockPanel.Dock="Right" Padding="12,4"/>
-                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,0,12,0"
-                                               Text="MP4 video (no sound), saved to Videos\WinNotch Recordings and added to the shelf. Press the record button again to stop."/>
-                                </DockPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="COPY TEXT FROM SCREEN" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,4"
-                                       Text="Snip any area and its text is copied. Uses the text recognition built into Windows, so it works offline in your Windows display languages."/>
-                        </Border>
-
-                        <TextBlock Text="MICROPHONE MUTE" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <DockPanel>
-                                    <TextBlock Text="Shortcut (works everywhere)" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="MicHotkeyBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
-                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. Ctrl+Alt+Shift+M — leave empty for none"/>
-                                </DockPanel>
-                                <CheckBox x:Name="MicDotBox" Content="Show a red mic icon on the notch while muted" Click="Changed"/>
-                                <CheckBox x:Name="MicPopupBox" Content="Pop-up when muting / unmuting" Click="Changed"/>
-                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
-                                           Text="Mutes every microphone in Windows itself, so Teams, Discord, Zoom and games all go quiet."/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="QUICK NOTES" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <DockPanel>
-                                    <TextBlock Text="Text size" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="NotesSizeBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
-                                        <ComboBoxItem Content="Small" Tag="small"/>
-                                        <ComboBoxItem Content="Normal" Tag="normal"/>
-                                        <ComboBoxItem Content="Large" Tag="large"/>
-                                    </ComboBox>
-                                </DockPanel>
-                                <DockPanel>
-                                    <Button Content="Open notes file" Click="OpenNotes_Click" DockPanel.Dock="Right" Padding="12,4"/>
-                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center"
-                                               Text="Saved as you type to notes.txt in %AppData%\WinNotch."/>
-                                </DockPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="CALCULATOR &amp; CONVERTER" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="CalcCurrencyBox" Content="Currency conversion (fetches daily rates online)" Click="Changed"/>
-                                <CheckBox x:Name="CalcCopyBox" Content="Enter copies the answer" Click="Changed"/>
-                                <DockPanel>
-                                    <TextBlock Text="Decimal places" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="CalcDecimalsBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
-                                        <ComboBoxItem Content="0" Tag="0"/>
-                                        <ComboBoxItem Content="2" Tag="2"/>
-                                        <ComboBoxItem Content="4" Tag="4"/>
-                                        <ComboBoxItem Content="6" Tag="6"/>
-                                        <ComboBoxItem Content="8" Tag="8"/>
-                                    </ComboBox>
-                                </DockPanel>
-                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
-                                           Text="Try: 12*4+3 · 15% of 80 · sqrt(2) · 5 ft in cm · 70 f to c · 2 gb in mb · 20 usd to gbp · £50 in eur"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="SHELF IMAGE ACTIONS" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="ImageActionsBox" Content="Right-click an image on the shelf to convert, resize or compress it" Click="Changed"/>
-                                <DockPanel>
-                                    <TextBlock Text="Resize to width (px)" VerticalAlignment="Center"/>
-                                    <TextBox x:Name="ResizeWidthBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
-                                             LostFocus="Changed" KeyDown="Field_KeyDown"/>
-                                </DockPanel>
-                                <DockPanel>
-                                    <TextBlock Text="JPG quality" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="JpegQualityText" DockPanel.Dock="Right" Width="40" TextAlignment="Right"
-                                               VerticalAlignment="Center"/>
-                                    <Slider x:Name="JpegQualitySlider" Width="130" HorizontalAlignment="Right" Minimum="10" Maximum="100"
-                                            TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"
-                                            ValueChanged="JpegQuality_ValueChanged"/>
-                                </DockPanel>
-                                <DockPanel>
-                                    <TextBlock Text="Save new images" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="ImageOutputBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
-                                        <ComboBoxItem Content="Next to the original" Tag="beside"/>
-                                        <ComboBoxItem Content="Pictures\WinNotch" Tag="folder"/>
+                                <CheckBox x:Name="RemindersBox" Content="Set reminders by typing them in the search box" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,6"
+                                           Text="Try: timer 10 min · remind me in 20 min to check the oven · remind me at 5pm call mum · remind me tomorrow 9am bins · remind me on friday at 3pm dentist · every weekday at 9am stand-up · every day 8pm meds · every 45 min stretch"/>
+                                <CheckBox x:Name="ReminderSoundBox" Content="Play a sound when a reminder is due" Margin="22,5,0,5" Click="Changed"/>
+                                <CheckBox x:Name="ReminderFullscreenBox" Content="Show due reminders over full-screen apps and games" Margin="22,5,0,5" Click="Changed"/>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="Countdown on the closed notch" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="ReminderCountdownBox" Width="200" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="Off" Tag="0"/>
+                                        <ComboBoxItem Content="15 minutes before" Tag="15"/>
+                                        <ComboBoxItem Content="30 minutes before" Tag="30"/>
+                                        <ComboBoxItem Content="1 hour before" Tag="60"/>
+                                        <ComboBoxItem Content="2 hours before" Tag="120"/>
                                     </ComboBox>
                                 </DockPanel>
                             </StackPanel>
                         </Border>
-
-                        <TextBlock Text="QUICK ACTIONS" Style="{StaticResource Heading}"/>
+                        <TextBlock Text="ADD A REMINDER" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
-                            <DockPanel>
-                                <Button Content="Edit…" Click="EditActions_Click" DockPanel.Dock="Right" VerticalAlignment="Center"/>
-                                <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,4,12,4"
-                                           Text="The buttons that appear for Photoshop, Word, Discord, Claude and other apps."/>
-                            </DockPanel>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Remind me to" VerticalAlignment="Center" Margin="0,0,12,0" Width="110"/>
+                                    <TextBox x:Name="NewReminderText" Style="{StaticResource Field}" KeyDown="NewReminder_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Repeat" VerticalAlignment="Center" Margin="0,0,12,0" Width="110"/>
+                                    <ComboBox x:Name="NewReminderRepeat" Width="220" HorizontalAlignment="Left" Margin="0,5"
+                                              SelectionChanged="NewReminderRepeat_Changed">
+                                        <ComboBoxItem Content="Once" Tag="none" IsSelected="True"/>
+                                        <ComboBoxItem Content="Every day" Tag="daily"/>
+                                        <ComboBoxItem Content="Every weekday (Mon-Fri)" Tag="weekdays"/>
+                                        <ComboBoxItem Content="Every week" Tag="weekly"/>
+                                        <ComboBoxItem Content="Every few minutes / hours" Tag="interval"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel x:Name="NewReminderDayRow">
+                                    <TextBlock x:Name="NewReminderDayLabel" Text="Day" VerticalAlignment="Center" Margin="0,0,12,0" Width="110"/>
+                                    <ComboBox x:Name="NewReminderDay" Width="220" HorizontalAlignment="Left" Margin="0,5"/>
+                                </DockPanel>
+                                <DockPanel x:Name="NewReminderTimeRow">
+                                    <TextBlock Text="Time" VerticalAlignment="Center" Margin="0,0,12,0" Width="110"/>
+                                    <TextBox x:Name="NewReminderTime" Style="{StaticResource Field}" Width="220" HorizontalAlignment="Left"
+                                             Text="09:00" KeyDown="NewReminder_KeyDown"/>
+                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                               Text="e.g. 17:30, 5:30pm, noon"/>
+                                </DockPanel>
+                                <DockPanel x:Name="NewReminderEveryRow" Visibility="Collapsed">
+                                    <TextBlock Text="Every" VerticalAlignment="Center" Margin="0,0,12,0" Width="110"/>
+                                    <TextBox x:Name="NewReminderEvery" Style="{StaticResource Field}" Width="80" HorizontalAlignment="Left"
+                                             Text="45" KeyDown="NewReminder_KeyDown"/>
+                                    <ComboBox x:Name="NewReminderEveryUnit" Width="130" HorizontalAlignment="Left" Margin="8,5,0,5">
+                                        <ComboBoxItem Content="minutes" Tag="1" IsSelected="True"/>
+                                        <ComboBoxItem Content="hours" Tag="60"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel Margin="0,6,0,2">
+                                    <Button Content="Add reminder" Click="AddReminder_Click" DockPanel.Dock="Right" Padding="16,6"/>
+                                    <TextBlock x:Name="NewReminderStatus" Style="{StaticResource Hint}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="COMING UP" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel x:Name="ReminderList"/>
+                                <TextBlock x:Name="ReminderListEmpty" Style="{StaticResource Hint}" Margin="0,6"
+                                           Text="No reminders set. Open the notch and type one in the search box."/>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
@@ -724,64 +765,28 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ============ Handheld ============ -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE7FC;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
-                        <TextBlock Text="Handheld"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <ScrollViewer Style="{StaticResource Page}">
-                    <StackPanel>
-                        <TextBlock Text="HANDHELD MODE" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="HandheldBox" Content="Handheld gaming PC mode" Click="Changed"/>
-                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
-                                           Text="Tap to open, controller support (hold View + Menu), bigger buttons, battery details, low battery warnings, quick switches and sliders, Steam / Xbox buttons."/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="YOUR DEVICE" Style="{StaticResource Heading}"/>
-                        <Border x:Name="DeviceCard" Style="{StaticResource Card}">
-                            <StackPanel>
-                                <StackPanel x:Name="DevicePicker"/>
-                                <DockPanel Margin="0,6,0,0">
-                                    <TextBlock Text="Open-notch shortcut" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="HandheldHotkeyBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
-                                             LostFocus="Changed" KeyDown="Field_KeyDown" ToolTip="e.g. Ctrl+Alt+N"/>
-                                </DockPanel>
-                                <TextBlock x:Name="DeviceTip" Style="{StaticResource Hint}" Margin="0,4,0,6"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="AUTOMATIC" Style="{StaticResource Heading}"/>
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel>
-                                <CheckBox x:Name="AutoProfileBox" Content="Switch when plugging in / unplugging" Click="Changed"/>
-                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
-                                           Text="Plugged in: max Hz + Performance. On battery: 60 Hz + Efficiency."/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-
-            <!-- ============ Features ============ -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE946;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
-                        <TextBlock Text="Features"/>
+                        <TextBlock Text="About"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer Style="{StaticResource Page}">
                     <StackPanel>
-                        <DockPanel Margin="2,14,0,8">
-                            <Button Content="View on GitHub" Click="OpenGitHub_Click" DockPanel.Dock="Right" Padding="12,4"/>
-                            <TextBlock x:Name="AboutText" Style="{StaticResource Hint}" VerticalAlignment="Center"/>
-                        </DockPanel>
+                        <TextBlock Text="ABOUT" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <DockPanel Margin="0,4">
+                                    <Button Content="View on GitHub" Click="OpenGitHub_Click" DockPanel.Dock="Right" Padding="12,4"/>
+                                    <TextBlock x:Name="VersionText" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,2,0,6"
+                                           Text="Settings, reminders, the shelf and the scratch pad are saved in %AppData%\WinNotch. Version 1's files are kept in a v1-backup folder there."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="FEATURES" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}" Padding="16,12">
                             <TextBox x:Name="FeaturesText" IsReadOnly="True" BorderThickness="0" Background="Transparent"
                                      Foreground="#DDDDDD" FontFamily="Cascadia Mono, Consolas" FontSize="12"
@@ -790,22 +795,37 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
         </TabControl>
 
         <!-- Footer -->
         <Border Grid.Row="1" Background="#171717" BorderBrush="#2A2A2A" BorderThickness="0,1,0,0" Padding="12,8">
             <DockPanel LastChildFill="False">
-                <Button Click="QuitApp_Click" Padding="14,6" Margin="0,0,14,0"
-                        ToolTip="Close WinNotch completely (the notch and the tray icon)">
+                <Button Click="QuitApp_Click" Padding="14,6" Margin="0,0,14,0" ToolTip="Close WinNotch completely">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE7E8;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                                    Foreground="#FF6B6B" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock Text="Quit WinNotch" Foreground="#FF6B6B" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
+                <Button Click="RestartApp_Click" Padding="14,6" Margin="0,0,14,0" ToolTip="Close WinNotch and start it again">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Restart WinNotch" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <!-- For testing while it's being built: remove later -->
+                <Button x:Name="HardRestartButton" Click="HardRestart_Click" Padding="14,6" Margin="0,0,14,0"
+                        ToolTip="Quits, re-runs run.bat (rebuilds from the code) and opens Settings again">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xEBE8;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                   Foreground="#FFD60A" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Hard restart (debug)" Foreground="#FFD60A" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center" Text="Changes save automatically"/>
-                <Button Content="Close" Click="Done_Click" DockPanel.Dock="Right" Padding="22,6"
-                        IsCancel="True" ToolTip="Close Settings (Esc)"/>
+                <Button Content="Close" Click="Done_Click" DockPanel.Dock="Right" Padding="22,6" IsCancel="True"/>
             </DockPanel>
         </Border>
     </Grid>

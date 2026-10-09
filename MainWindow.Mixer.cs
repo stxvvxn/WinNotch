@@ -1,201 +1,308 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace WinNotch;
 
-// Volume for each app: one slider and a mute button per app that's making (or recently made) sound.
+// Second page of the open notch: scroll down for volume controls (the whole PC, then each app),
+// scroll up to go back. The date, time and search box stay where they are.
 public partial class MainWindow
 {
-    private sealed class MixerApp
+    private sealed class VolumeRow
     {
         public string Key = "";
         public string Name = "";
-        public readonly List<ISimpleAudioVolume> Volumes = new();
+        public Func<float> GetLevel = () => 0;
+        public Action<float> SetLevel = _ => { };
+        public Func<bool> GetMute = () => false;
+        public Action<bool> SetMute = _ => { };
         public Slider? Slider;
         public TextBlock? Percent;
-        public Button? Mute;
+        public TextBlock? MuteIcon;
         public bool Updating;
     }
 
-    private readonly List<MixerApp> _mixerApps = new();
-    private readonly DispatcherTimer _mixerTimer = new() { Interval = TimeSpan.FromSeconds(2) };
+    private int _page;
+    private readonly List<VolumeRow> _volumeRows = new();
+    private readonly DispatcherTimer _mixerTimer = new() { Interval = TimeSpan.FromSeconds(1.5) };
     private bool _mixerTimerReady;
 
-    private void MixerToolButton_Click(object sender, RoutedEventArgs e) => ToggleTool("mixer");
+    // ---------- Switching pages ----------
+    // Page ids: 0 = system info (and search results), 3 = music, 1 = volume, 2 = shelf - in that order.
+    // Pages switched off in Settings are skipped.
+
+    private List<int> EnabledPages()
+    {
+        var pages = new List<int> { 0 };
+        if (_settings.MusicPage) pages.Add(3);
+        if (_settings.VolumePage) pages.Add(1);
+        if (_settings.ShelfPage) pages.Add(2);
+        return pages;
+    }
+
+    // Pages are switched with the round page bubbles under the notch now, so the wheel
+    // just scrolls whatever it's over (the scratch pad, a slider...)
+    private void Pill_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+    }
+
+    private void ShowPage(int page, bool animate = true)
+    {
+        var pages = EnabledPages();
+        if (!pages.Contains(page)) page = 0;
+        bool changed = page != _page;
+        bool down = pages.IndexOf(page) > pages.IndexOf(_page);
+        _page = page;
+        HomePage.Visibility = Vis(page == 0);
+        MixerPage.Visibility = Vis(page == 1);
+        ShelfPage.Visibility = Vis(page == 2);
+        MusicPage.Visibility = Vis(page == 3);
+        if (page == 3) RefreshMusic(); else StopMusicTimer();
+        BuildPageDots();
+
+        if (page == 1)
+        {
+            if (!_mixerTimerReady)
+            {
+                _mixerTimerReady = true;
+                _mixerTimer.Tick += (_, _) =>
+                {
+                    if (_page == 1 && _expanded) RefreshMixer();
+                    else _mixerTimer.Stop();
+                };
+            }
+            RefreshMixer();
+            _mixerTimer.Start();
+        }
+        else
+        {
+            _mixerTimer.Stop();
+        }
+        if (page == 2) RefreshShelf();
+
+        if (animate && changed)
+        {
+            // Slide the new page in from the direction you scrolled
+            var shown = page switch { 1 => (FrameworkElement)MixerPage, 2 => ShelfPage, 3 => MusicPage, _ => HomePage };
+            var move = new TranslateTransform(0, down ? 14 : -14);
+            shown.RenderTransform = move;
+            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+            move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(220)) { EasingFunction = ease });
+            shown.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)));
+        }
+        AnimateHeight();
+    }
+
+    // The page dots have been replaced by page bubbles under the notch: just light up the right one
+    private void BuildPageDots()
+    {
+        PageDots.Visibility = Visibility.Collapsed;
+        UpdatePageBubbles();
+    }
+
+    // ---------- Volume rows ----------
 
     private void RefreshMixer()
     {
-        if (!_mixerTimerReady)
-        {
-            _mixerTimerReady = true;
-            _mixerTimer.Tick += (_, _) =>
-            {
-                if (_openTool == "mixer" && _expanded) RefreshMixer();
-                else _mixerTimer.Stop();
-            };
-        }
-        _mixerTimer.Start();
+        var rows = ReadVolumeRows();
 
-        var apps = ReadMixerApps();
-
-        // Same apps as before: just update the values (rebuilding would interrupt a drag)
-        if (apps.Select(a => a.Key).SequenceEqual(_mixerApps.Select(a => a.Key)))
+        // Same apps as before: just update the numbers (rebuilding would interrupt a drag)
+        if (rows.Select(r => r.Key).SequenceEqual(_volumeRows.Select(r => r.Key)))
         {
-            for (int i = 0; i < apps.Count; i++)
+            for (int i = 0; i < rows.Count; i++)
             {
-                _mixerApps[i].Volumes.Clear();
-                _mixerApps[i].Volumes.AddRange(apps[i].Volumes);
-                if (_mixerApps[i].Slider?.IsMouseCaptureWithin != true) ShowMixerValues(_mixerApps[i]);
+                var old = _volumeRows[i];
+                old.GetLevel = rows[i].GetLevel;
+                old.SetLevel = rows[i].SetLevel;
+                old.GetMute = rows[i].GetMute;
+                old.SetMute = rows[i].SetMute;
+                if (old.Slider?.IsMouseCaptureWithin != true) ShowVolume(old);
             }
             return;
         }
 
-        _mixerApps.Clear();
-        _mixerApps.AddRange(apps);
+        _volumeRows.Clear();
+        _volumeRows.AddRange(rows);
         MixerRows.Children.Clear();
-        foreach (var app in apps) MixerRows.Children.Add(BuildMixerRow(app));
-        MixerEmpty.Visibility = Vis(apps.Count == 0);
-        AnimateExpandedHeight();
+        foreach (var row in rows) MixerRows.Children.Add(BuildVolumeRow(row));
+        MixerEmpty.Visibility = Vis(rows.Count <= 1);
+        AnimateHeight();
     }
 
-    private FrameworkElement BuildMixerRow(MixerApp app)
+    private FrameworkElement BuildVolumeRow(VolumeRow row)
     {
-        var row = new DockPanel { Margin = new Thickness(0, 2, 0, 2), Height = 30 };
+        bool master = row.Key == "master";
+        var dock = new DockPanel { Margin = new Thickness(0, 0, 0, master ? 8 : 2), Height = 34 };
 
-        var mute = new Button
+        // Mute button
+        var muteIcon = new TextBlock
         {
-            Style = (Style)FindResource("IconButton"),
-            Width = 30,
-            Height = 30,
-            FontSize = 13,
-            ToolTip = "Mute / unmute",
+            FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+            FontSize = 14,
+            Foreground = Brushes.White,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
         };
-        mute.Click += (_, _) =>
+        var mute = new Border
         {
-            bool muteNow = !IsMuted(app);
-            foreach (var v in app.Volumes) { var ctx = Guid.Empty; try { v.SetMute(muteNow, ref ctx); } catch { } }
-            ShowMixerValues(app);
+            Width = 32,
+            Height = 30,
+            CornerRadius = new CornerRadius(8),
+            Background = Brushes.Transparent,
+            Cursor = Cursors.Hand,
+            ToolTip = "Mute / unmute",
+            Child = muteIcon,
+        };
+        mute.MouseEnter += (_, _) => mute.Background = (Brush)FindResource("SurfaceHover");
+        mute.MouseLeave += (_, _) => mute.Background = Brushes.Transparent;
+        mute.MouseLeftButtonUp += (_, _) =>
+        {
+            try { row.SetMute(!row.GetMute()); } catch { }
+            ShowVolume(row);
         };
         DockPanel.SetDock(mute, Dock.Right);
-        row.Children.Add(mute);
+        dock.Children.Add(mute);
 
         var percent = new TextBlock
         {
-            Width = 36,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
-            FontSize = 11,
+            Width = 44,
+            FontSize = 12,
+            Foreground = (Brush)FindResource("Secondary"),
             TextAlignment = TextAlignment.Right,
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(0, 0, 4, 0),
+            Margin = new Thickness(0, 0, 6, 0),
         };
+        Typography.SetNumeralAlignment(percent, FontNumeralAlignment.Tabular);
         DockPanel.SetDock(percent, Dock.Right);
-        row.Children.Add(percent);
+        dock.Children.Add(percent);
 
-        var icon = new Image { Width = 18, Height = 18, Margin = new Thickness(2, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
-        icon.Source = AppIcon(app.Key);
+        // Icon and name
+        FrameworkElement icon = !master && AppIcon(row.Key) is { } img
+            ? new Image { Source = img, Width = 20, Height = 20 }
+            : new TextBlock
+            {
+                Text = master ? "" : row.Key == "system" ? "" : "",
+                FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+                FontSize = 15,
+                Foreground = Brushes.White,
+                Width = 20,
+                TextAlignment = TextAlignment.Center,
+            };
+        icon.VerticalAlignment = VerticalAlignment.Center;
+        icon.Margin = new Thickness(4, 0, 10, 0);
         DockPanel.SetDock(icon, Dock.Left);
-        row.Children.Add(icon);
+        dock.Children.Add(icon);
 
         var name = new TextBlock
         {
-            Text = app.Name,
-            Width = 110,
+            Text = row.Name,
+            Width = 150,
+            FontSize = 13,
+            FontWeight = master ? FontWeights.SemiBold : FontWeights.Normal,
             Foreground = Brushes.White,
-            FontSize = 12,
             TextTrimming = TextTrimming.CharacterEllipsis,
             VerticalAlignment = VerticalAlignment.Center,
-            ToolTip = app.Name,
+            ToolTip = row.Name,
         };
         DockPanel.SetDock(name, Dock.Left);
-        row.Children.Add(name);
+        dock.Children.Add(name);
 
-        var slider = new Slider
-        {
-            Minimum = 0,
-            Maximum = 100,
-            Focusable = false,
-            IsMoveToPointEnabled = true,
-            VerticalAlignment = VerticalAlignment.Center,
-            Foreground = AccentOrange,
-        };
+        var slider = new Slider { Style = (Style)FindResource("SlimSlider"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
         slider.ValueChanged += (_, e) =>
         {
-            if (app.Updating) return;
-            foreach (var v in app.Volumes) { var ctx = Guid.Empty; try { v.SetMasterVolume((float)(e.NewValue / 100), ref ctx); } catch { } }
+            if (row.Updating) return;
+            try { row.SetLevel((float)(e.NewValue / 100)); } catch { }
             percent.Text = $"{Math.Round(e.NewValue)}%";
         };
-        row.Children.Add(slider);
+        dock.Children.Add(slider);
 
-        app.Slider = slider;
-        app.Percent = percent;
-        app.Mute = mute;
-        ShowMixerValues(app);
-        return row;
+        row.Slider = slider;
+        row.Percent = percent;
+        row.MuteIcon = muteIcon;
+        ShowVolume(row);
+
+        if (!master) return dock;
+        // A thin line under the whole-PC volume
+        var wrap = new StackPanel();
+        wrap.Children.Add(dock);
+        wrap.Children.Add(new Border { Height = 1, Background = (Brush)FindResource("Surface"), Margin = new Thickness(4, 0, 4, 8) });
+        return wrap;
     }
 
-    private static bool IsMuted(MixerApp app)
+    private void ShowVolume(VolumeRow row)
     {
-        foreach (var v in app.Volumes)
-        {
-            try { v.GetMute(out bool m); if (!m) return false; } catch { }
-        }
-        return app.Volumes.Count > 0;
-    }
-
-    private void ShowMixerValues(MixerApp app)
-    {
-        if (app.Slider == null || app.Volumes.Count == 0) return;
+        if (row.Slider == null) return;
         float level = 0;
-        try { app.Volumes[0].GetMasterVolume(out level); } catch { }
-        bool muted = IsMuted(app);
-        app.Updating = true;
-        app.Slider.Value = Math.Round(level * 100);
-        app.Updating = false;
-        app.Percent!.Text = muted ? "Muted" : $"{Math.Round(level * 100)}%";
-        app.Mute!.Content = muted ? "" : "";
-        app.Mute.Foreground = muted ? LowRed : Brushes.White;
-        app.Slider.Opacity = muted ? 0.4 : 1;
+        bool muted = false;
+        try { level = row.GetLevel(); muted = row.GetMute(); } catch { }
+        row.Updating = true;
+        row.Slider.Value = Math.Round(level * 100);
+        row.Updating = false;
+        row.Percent!.Text = muted ? "Muted" : $"{Math.Round(level * 100)}%";
+        row.MuteIcon!.Text = muted ? "" : level < 0.01 ? "" : level < 0.34 ? "" : level < 0.67 ? "" : "";
+        row.MuteIcon.Foreground = muted ? new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)) : Brushes.White;
+        row.Slider.Opacity = muted ? 0.45 : 1;
     }
 
-    private static ImageSource? AppIcon(string key)
+    private readonly Dictionary<string, ImageSource?> _appIcons = new(StringComparer.OrdinalIgnoreCase);
+
+    private ImageSource? AppIcon(string processName)
     {
-        if (key == "system") return null;
+        if (processName == "system") return null;
+        if (_appIcons.TryGetValue(processName, out var cached)) return cached;
+        ImageSource? icon = null;
         try
         {
-            var p = Process.GetProcessesByName(key).FirstOrDefault();
-            string? exe = p?.MainModule?.FileName;
-            return exe != null ? GetIcon(exe) : null;
+            using var p = Process.GetProcessesByName(processName).FirstOrDefault();
+            if (p?.MainModule?.FileName is { } exe) icon = ShellIcon(exe);
         }
-        catch
-        {
-            return null; // e.g. an app running as administrator
-        }
+        catch { } // e.g. an app running as administrator
+        _appIcons[processName] = icon;
+        return icon;
     }
 
-    /// <summary>Every app with an audio session on the speakers / headphones, grouped by app.</summary>
-    private static List<MixerApp> ReadMixerApps()
+    /// <summary>The whole-PC volume, then one row per app with sound (grouped by app).</summary>
+    private static List<VolumeRow> ReadVolumeRows()
     {
-        var apps = new List<MixerApp>();
+        var rows = new List<VolumeRow>();
         try
         {
             var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
-            if (enumerator.GetDefaultAudioEndpoint(0, 1, out IMMDevice device) != 0) return apps;
-            var iid = typeof(IAudioSessionManager2).GUID;
-            if (device.Activate(ref iid, 23, IntPtr.Zero, out object obj) != 0) return apps;
-            var manager = (IAudioSessionManager2)obj;
-            if (manager.GetSessionEnumerator(out IAudioSessionEnumerator sessions) != 0) return apps;
+            if (enumerator.GetDefaultAudioEndpoint(0 /* speakers */, 1 /* multimedia */, out IMMDevice device) != 0) return rows;
+
+            // The whole PC
+            var endpointIid = typeof(IAudioEndpointVolume).GUID;
+            if (device.Activate(ref endpointIid, 23, IntPtr.Zero, out object ep) == 0 && ep is IAudioEndpointVolume endpoint)
+            {
+                rows.Add(new VolumeRow
+                {
+                    Key = "master",
+                    Name = "Whole PC",
+                    GetLevel = () => { endpoint.GetMasterVolumeLevelScalar(out float l); return l; },
+                    SetLevel = l => { var ctx = Guid.Empty; endpoint.SetMasterVolumeLevelScalar(l, ref ctx); },
+                    GetMute = () => { endpoint.GetMute(out bool m); return m; },
+                    SetMute = m => { var ctx = Guid.Empty; endpoint.SetMute(m, ref ctx); },
+                });
+            }
+
+            // Each app
+            var managerIid = typeof(IAudioSessionManager2).GUID;
+            if (device.Activate(ref managerIid, 23, IntPtr.Zero, out object mgr) != 0) return rows;
+            if (((IAudioSessionManager2)mgr).GetSessionEnumerator(out IAudioSessionEnumerator sessions) != 0) return rows;
             sessions.GetCount(out int count);
 
+            var groups = new Dictionary<string, (string Name, List<ISimpleAudioVolume> Volumes)>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < count; i++)
             {
                 if (sessions.GetSession(i, out IAudioSessionControl2 control) != 0) continue;
                 control.GetState(out int state);
-                if (state == 2) continue; // expired
+                if (state == 2) continue; // finished
 
                 string key, name;
                 if (control.IsSystemSoundsSession() == 0)
@@ -217,73 +324,27 @@ public partial class MainWindow
                     }
                     catch
                     {
-                        continue; // process already gone
+                        continue; // already closed
                     }
                 }
+                if (!groups.TryGetValue(key, out var g)) groups[key] = g = (name, new List<ISimpleAudioVolume>());
+                g.Volumes.Add((ISimpleAudioVolume)control);
+            }
 
-                var app = apps.FirstOrDefault(a => a.Key == key);
-                if (app == null)
+            foreach (var (key, (name, volumes)) in groups.OrderBy(g => g.Key == "system").ThenBy(g => g.Value.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                rows.Add(new VolumeRow
                 {
-                    app = new MixerApp { Key = key, Name = name };
-                    apps.Add(app);
-                }
-                app.Volumes.Add((ISimpleAudioVolume)control);
+                    Key = key,
+                    Name = name,
+                    GetLevel = () => { volumes[0].GetMasterVolume(out float l); return l; },
+                    SetLevel = l => { foreach (var v in volumes) { var ctx = Guid.Empty; v.SetMasterVolume(l, ref ctx); } },
+                    GetMute = () => volumes.All(v => { v.GetMute(out bool m); return m; }),
+                    SetMute = m => { foreach (var v in volumes) { var ctx = Guid.Empty; v.SetMute(m, ref ctx); } },
+                });
             }
         }
         catch { }
-
-        // System sounds last, apps alphabetically
-        return apps.OrderBy(a => a.Key == "system").ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    // ---------- Core Audio session interfaces ----------
-
-    [ComImport, Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IAudioSessionManager2
-    {
-        [PreserveSig] int GetAudioSessionControl(IntPtr groupingParam, int flags, out IntPtr control);
-        [PreserveSig] int GetSimpleAudioVolume(IntPtr groupingParam, int flags, out IntPtr volume);
-        [PreserveSig] int GetSessionEnumerator(out IAudioSessionEnumerator sessions);
-        [PreserveSig] int RegisterSessionNotification(IntPtr notification);
-        [PreserveSig] int UnregisterSessionNotification(IntPtr notification);
-        [PreserveSig] int RegisterDuckNotification([MarshalAs(UnmanagedType.LPWStr)] string sessionId, IntPtr notification);
-        [PreserveSig] int UnregisterDuckNotification(IntPtr notification);
-    }
-
-    [ComImport, Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IAudioSessionEnumerator
-    {
-        [PreserveSig] int GetCount(out int count);
-        [PreserveSig] int GetSession(int index, out IAudioSessionControl2 session);
-    }
-
-    [ComImport, Guid("BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IAudioSessionControl2
-    {
-        // IAudioSessionControl
-        [PreserveSig] int GetState(out int state);
-        [PreserveSig] int GetDisplayName([MarshalAs(UnmanagedType.LPWStr)] out string name);
-        [PreserveSig] int SetDisplayName([MarshalAs(UnmanagedType.LPWStr)] string name, ref Guid context);
-        [PreserveSig] int GetIconPath([MarshalAs(UnmanagedType.LPWStr)] out string path);
-        [PreserveSig] int SetIconPath([MarshalAs(UnmanagedType.LPWStr)] string path, ref Guid context);
-        [PreserveSig] int GetGroupingParam(out Guid param);
-        [PreserveSig] int SetGroupingParam(ref Guid param, ref Guid context);
-        [PreserveSig] int RegisterAudioSessionNotification(IntPtr notification);
-        [PreserveSig] int UnregisterAudioSessionNotification(IntPtr notification);
-        // IAudioSessionControl2
-        [PreserveSig] int GetSessionIdentifier([MarshalAs(UnmanagedType.LPWStr)] out string id);
-        [PreserveSig] int GetSessionInstanceIdentifier([MarshalAs(UnmanagedType.LPWStr)] out string id);
-        [PreserveSig] int GetProcessId(out uint pid);
-        [PreserveSig] int IsSystemSoundsSession();
-        [PreserveSig] int SetDuckingPreference([MarshalAs(UnmanagedType.Bool)] bool optOut);
-    }
-
-    [ComImport, Guid("87CE5498-68D6-44E5-9215-6DA47EF883D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface ISimpleAudioVolume
-    {
-        [PreserveSig] int SetMasterVolume(float level, ref Guid context);
-        [PreserveSig] int GetMasterVolume(out float level);
-        [PreserveSig] int SetMute([MarshalAs(UnmanagedType.Bool)] bool mute, ref Guid context);
-        [PreserveSig] int GetMute([MarshalAs(UnmanagedType.Bool)] out bool mute);
+        return rows;
     }
 }
