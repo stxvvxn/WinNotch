@@ -41,8 +41,8 @@ public partial class MainWindow
         DpiChanged += (_, _) => Dispatcher.InvokeAsync(PositionWindow, DispatcherPriority.Background);
 
         // Hover labels (tooltips) are little windows of their own: keep them above the notch
-        EventManager.RegisterClassHandler(typeof(ToolTip), ToolTip.OpenedEvent, new RoutedEventHandler(OnToolTipOpened));
-        EventManager.RegisterClassHandler(typeof(ToolTip), ToolTip.ClosedEvent, new RoutedEventHandler(OnToolTipClosed));
+        EventManager.RegisterClassHandler(typeof(System.Windows.Controls.ToolTip), System.Windows.Controls.ToolTip.OpenedEvent, new RoutedEventHandler(OnToolTipOpened));
+        EventManager.RegisterClassHandler(typeof(System.Windows.Controls.ToolTip), System.Windows.Controls.ToolTip.ClosedEvent, new RoutedEventHandler(OnToolTipClosed));
 
         _screenTimer.Tick += (_, _) =>
         {
@@ -89,12 +89,12 @@ public partial class MainWindow
 
     // ---------- Hover labels ----------
 
-    private ToolTip? _openToolTip;
+    private System.Windows.Controls.ToolTip? _openToolTip;
 
     private void OnToolTipOpened(object sender, RoutedEventArgs e)
     {
         // Only the notch's own labels (bubbles, toggles, tiles...), not the Settings window's
-        if (sender is not ToolTip tip || tip.PlacementTarget is not DependencyObject target || Window.GetWindow(target) != this) return;
+        if (sender is not System.Windows.Controls.ToolTip tip || tip.PlacementTarget is not DependencyObject target || Window.GetWindow(target) != this) return;
         _openToolTip = tip;
         RaisePopup(tip);
         Dispatcher.BeginInvoke(new Action(() => { if (ReferenceEquals(_openToolTip, tip)) RaisePopup(tip); }), DispatcherPriority.Loaded);
