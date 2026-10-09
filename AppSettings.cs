@@ -34,12 +34,22 @@ public sealed class AppSettings
     public bool BrightnessPopup { get; set; } = true;
     public bool ChargingPopup { get; set; } = true;
     public bool PrivacyDots { get; set; } = true;
+    public bool ScreenshotPopup { get; set; } = true;   // any screenshot (Win+Shift+S, PrintScreen, ShareX...)
+    public bool ScreenshotToShelf { get; set; } = true; // ...and put it on the shelf
+    public bool BatteryFullPopup { get; set; } = true;
+    public bool BatterySaverPopup { get; set; } = true;
+    public bool RainPopup { get; set; } = true;
+    public int RainLeadMinutes { get; set; } = 30;      // warn this far ahead
 
     // Productivity
     public bool ClipboardHistory { get; set; } = true;
     public bool TimerSound { get; set; } = true;
     public string ScreenshotMethod { get; set; } = "snipping";              // snipping / sharex
     public string ScreenshotKeys { get; set; } = "Ctrl+PrintScreen";        // shortcut sent to ShareX
+
+    // Buttons along the top of the open notch, in order
+    public List<TopButtonSetting> TopButtons { get; set; } = new();
+    public bool TopButtonShown(string key) => TopButtons.FirstOrDefault(b => b.Key == key)?.Shown ?? true;
 
     // Bubbles around the open notch
     public bool ShowBubbles { get; set; } = true;
@@ -103,11 +113,14 @@ public sealed class AppSettings
                 // The old default was wrong; update anyone still on it
                 if (loaded.ScreenshotKeys == "Ctrl+Shift+PrintScreen") loaded.ScreenshotKeys = "Ctrl+PrintScreen";
                 BubbleSetting.Normalize(loaded.Bubbles);
+                TopButtonSetting.Normalize(loaded);
                 return loaded;
             }
         }
         catch { }
-        return new AppSettings();
+        var fresh = new AppSettings();
+        TopButtonSetting.Normalize(fresh);
+        return fresh;
     }
 
     public void Save()
@@ -225,6 +238,45 @@ public sealed class BubbleSetting
 
         foreach (var layout in BubbleLayout.All)
             BubbleLayout.Renumber(bubbles, layout);
+    }
+}
+
+/// <summary>One button along the top of the open notch.</summary>
+public sealed class TopButtonSetting
+{
+    public string Key { get; set; } = "";
+    public bool Shown { get; set; } = true;
+
+    /// <summary>Every top button: key, icon, name. This is also the default order.</summary>
+    public static readonly (string Key, string Icon, string Name)[] All =
+    {
+        ("clean", "\uE74D", "Clean up"),
+        ("timer", "\uE916", "Timer"),
+        ("clipboard", "\uE77F", "Clipboard history"),
+        ("colour", "\uE790", "Colour picker"),
+        ("screenshot", "\uE722", "Screenshot to shelf"),
+        ("claude", "\uE8BD", "Claude"),
+        ("mic", "\uE720", "Mic mute"),
+        ("notes", "\uE70B", "Quick notes"),
+        ("calc", "\uE8EF", "Calculator"),
+    };
+
+    /// <summary>Fills in the list the first time (keeping the old show/hide choices) and adds any new buttons.</summary>
+    public static void Normalize(AppSettings s)
+    {
+        if (s.TopButtons.Count == 0)
+        {
+            foreach (var (key, _, _) in All)
+                s.TopButtons.Add(new TopButtonSetting
+                {
+                    Key = key,
+                    Shown = key switch { "mic" => s.MicButton, "notes" => s.NotesEnabled, "calc" => s.CalcEnabled, _ => true },
+                });
+        }
+        s.TopButtons.RemoveAll(b => !All.Any(a => a.Key == b.Key));
+        s.TopButtons = s.TopButtons.GroupBy(b => b.Key).Select(g => g.First()).ToList();
+        foreach (var (key, _, _) in All)
+            if (!s.TopButtons.Any(b => b.Key == key)) s.TopButtons.Add(new TopButtonSetting { Key = key });
     }
 }
 

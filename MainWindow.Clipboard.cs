@@ -87,6 +87,13 @@ public partial class MainWindow
                     return;
                 }
 
+                // A screenshot from Win+Shift+S, PrintScreen, ShareX...: pop-up (and shelf)
+                if (IsScreenshotOnClipboard(data))
+                {
+                    OnClipboardScreenshot(data);
+                    return;
+                }
+
                 if (!_settings.ClipboardHistory) return;
 
                 // Password managers mark secrets so clipboard tools ignore them; respect that
@@ -210,6 +217,7 @@ public partial class MainWindow
 
     private void SaveScreenshotToShelf(IDataObject data)
     {
+        _lastShotAt = DateTime.Now; // so the screenshot pop-up doesn't announce it again
         try
         {
             BitmapSource? image = null;

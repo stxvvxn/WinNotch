@@ -317,6 +317,23 @@
                 </TabItem.Header>
                 <ScrollViewer Style="{StaticResource Page}">
                     <StackPanel>
+                        <TextBlock Text="BUTTONS AT THE TOP" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <!-- Preview of the bar as it'll look -->
+                                <Border Background="Black" CornerRadius="0,0,12,12" HorizontalAlignment="Left" Padding="10,6"
+                                        Margin="0,4,0,8" MinWidth="200">
+                                    <StackPanel x:Name="TopButtonsPreview" Orientation="Horizontal"/>
+                                </Border>
+                                <StackPanel x:Name="TopButtonsList"/>
+                                <DockPanel Margin="0,6,0,4">
+                                    <Button Content="Reset order" Click="ResetTopButtons_Click" DockPanel.Dock="Right" Padding="12,4"/>
+                                    <TextBlock Style="{StaticResource Hint}" VerticalAlignment="Center"
+                                               Text="Tick to show, drag a row (or use the arrows) to change the order."/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
                         <TextBlock Text="MUSIC" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
@@ -368,6 +385,36 @@
                                 <CheckBox x:Name="VolumeBox" Content="Volume" Click="Changed"/>
                                 <CheckBox x:Name="BrightnessBox" Content="Brightness (laptop screens)" Click="Changed"/>
                                 <CheckBox x:Name="ChargingBox" Content="Charger plugged in" Click="Changed"/>
+                                <CheckBox x:Name="BatteryFullBox" Content="Battery fully charged (or reached its charge limit)" Click="Changed"/>
+                                <CheckBox x:Name="BatterySaverBox" Content="Battery saver turned on / off" Click="Changed"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="SCREENSHOTS" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="ScreenshotPopupBox" Content="Pop-up with a thumbnail when you take a screenshot" Click="Changed"/>
+                                <CheckBox x:Name="ScreenshotShelfBox" Content="Put new screenshots on the shelf" Margin="22,5,0,5" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
+                                           Text="Works with Win+Shift+S, PrintScreen, Win+PrintScreen, the Snipping Tool, ShareX and Greenshot. Screenshots only on the clipboard are saved to Pictures\WinNotch Screenshots."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="WEATHER" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="RainPopupBox" Content="Warn me when rain or snow is on the way" Click="Changed"/>
+                                <DockPanel Margin="22,0,0,0">
+                                    <TextBlock Text="How far ahead" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="RainLeadBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="15 minutes" Tag="15"/>
+                                        <ComboBoxItem Content="30 minutes" Tag="30"/>
+                                        <ComboBoxItem Content="1 hour" Tag="60"/>
+                                        <ComboBoxItem Content="2 hours" Tag="120"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,0,0,6"
+                                           Text="Once per shower, using the same forecast as the weather icon (Open-Meteo). Not while it's already raining."/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -410,7 +457,6 @@
                         <TextBlock Text="MICROPHONE MUTE" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <CheckBox x:Name="MicButtonBox" Content="Mic mute button in the open notch" Click="Changed"/>
                                 <DockPanel>
                                     <TextBlock Text="Shortcut (works everywhere)" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBox x:Name="MicHotkeyBox" Style="{StaticResource Field}" Width="170" HorizontalAlignment="Right"
@@ -426,7 +472,6 @@
                         <TextBlock Text="QUICK NOTES" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <CheckBox x:Name="NotesEnabledBox" Content="Notes button in the open notch" Click="Changed"/>
                                 <DockPanel>
                                     <TextBlock Text="Text size" VerticalAlignment="Center"/>
                                     <ComboBox x:Name="NotesSizeBox" Width="170" HorizontalAlignment="Right" Margin="0,5" SelectionChanged="Changed">
@@ -446,7 +491,6 @@
                         <TextBlock Text="CALCULATOR &amp; CONVERTER" Style="{StaticResource Heading}"/>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <CheckBox x:Name="CalcEnabledBox" Content="Calculator button in the open notch" Click="Changed"/>
                                 <CheckBox x:Name="CalcCurrencyBox" Content="Currency conversion (fetches daily rates online)" Click="Changed"/>
                                 <CheckBox x:Name="CalcCopyBox" Content="Enter copies the answer" Click="Changed"/>
                                 <DockPanel>

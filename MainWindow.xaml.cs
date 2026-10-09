@@ -48,7 +48,7 @@ public partial class MainWindow : Window
 
     // Weather
     private static readonly HttpClient Http = CreateHttpClient();
-    private readonly DispatcherTimer _weatherTimer = new() { Interval = TimeSpan.FromMinutes(15) };
+    private readonly DispatcherTimer _weatherTimer = new() { Interval = TimeSpan.FromMinutes(10) };
     private (double Lat, double Lon)? _location;
 
     // Battery
@@ -155,6 +155,8 @@ public partial class MainWindow : Window
         ApplyTheme();
         ApplyExtras();
         BuildBubbles();
+        ApplyTopButtons();
+        ApplyScreenshotWatch();
         InitUpdates();
     }
 
@@ -250,6 +252,7 @@ public partial class MainWindow : Window
         BatteryIcon.Visibility = Vis(_settings.ShowBattery);
 
         CheckLowBattery(percent, pluggedIn);
+        CheckBatteryPopups(percent, pluggedIn, s.BatteryFlag, s.SystemStatusFlag);
         if (_wasPluggedIn is bool was && was != pluggedIn) OnPowerSourceChanged(pluggedIn);
 
         // Charging pop-up when the charger goes in
@@ -275,7 +278,7 @@ public partial class MainWindow : Window
             if (_location is not { } loc) return;
 
             string url = FormattableString.Invariant(
-                $"https://api.open-meteo.com/v1/forecast?latitude={loc.Lat:F3}&longitude={loc.Lon:F3}&current=weather_code,is_day");
+                $"https://api.open-meteo.com/v1/forecast?latitude={loc.Lat:F3}&longitude={loc.Lon:F3}&current=weather_code,is_day,precipitation&minutely_15=precipitation,snowfall&forecast_minutely_15=12&timezone=GMT");
 
             using var doc = JsonDocument.Parse(await Http.GetStringAsync(url));
             var current = doc.RootElement.GetProperty("current");
@@ -284,6 +287,7 @@ public partial class MainWindow : Window
 
             WeatherIcon.Text = WeatherGlyph(code, isDay);
             WeatherIcon.Visibility = Vis(_settings.ShowWeather);
+            CheckRain(doc.RootElement);
         }
         catch
         {

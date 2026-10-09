@@ -41,6 +41,11 @@ POP-UPS (DYNAMIC ISLAND STYLE)
 - Charger plugged in
 - Microphone muted / unmuted
 - Timer finished
+- Screenshot taken, with a thumbnail (Win+Shift+S, PrintScreen, Snipping Tool,
+  ShareX, Greenshot...) - and it goes straight onto the shelf
+- Battery fully charged (or reached its charge limit, e.g. 80%)
+- Battery saver turned on / off
+- Rain or snow on the way ("Rain in about 20 min"), warning 15 min - 2 hours ahead
 
 
 SHELF
@@ -73,6 +78,7 @@ When one of these apps is in front, the open notch shows shortcut buttons for it
 
 TOOLS (BUTTONS ALONG THE TOP OF THE OPEN NOTCH)
 -----------------------------------------------
+- Choose which buttons show and in what order (drag them in Settings)
 - Clean up: clears temp files, crash dumps and browser caches
 - Screenshot to shelf: Snipping Tool or ShareX (Ctrl+PrintScreen)
 - Colour picker: click anywhere on screen to copy its colour

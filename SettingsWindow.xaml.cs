@@ -47,6 +47,13 @@ public partial class SettingsWindow : Window
         BrightnessBox.IsChecked = s.BrightnessPopup;
         ChargingBox.IsChecked = s.ChargingPopup;
         PrivacyBox.IsChecked = s.PrivacyDots;
+        BatteryFullBox.IsChecked = s.BatteryFullPopup;
+        BatterySaverBox.IsChecked = s.BatterySaverPopup;
+        ScreenshotPopupBox.IsChecked = s.ScreenshotPopup;
+        ScreenshotShelfBox.IsChecked = s.ScreenshotToShelf;
+        RainPopupBox.IsChecked = s.RainPopup;
+        if (!SelectByTag(RainLeadBox, s.RainLeadMinutes.ToString())) RainLeadBox.SelectedIndex = 1;
+        BuildTopButtonsEditor();
 
         ClipboardBox.IsChecked = s.ClipboardHistory;
         TimerSoundBox.IsChecked = s.TimerSound;
@@ -79,15 +86,12 @@ public partial class SettingsWindow : Window
         StatsNetBox.IsChecked = s.StatsNet;
 
         // Mic
-        MicButtonBox.IsChecked = s.MicButton;
         MicHotkeyBox.Text = s.MicHotkey;
         MicDotBox.IsChecked = s.MicShowDot;
         MicPopupBox.IsChecked = s.MicPopup;
 
         // Notes and calculator
-        NotesEnabledBox.IsChecked = s.NotesEnabled;
         if (!SelectByTag(NotesSizeBox, s.NotesTextSize)) NotesSizeBox.SelectedIndex = 1;
-        CalcEnabledBox.IsChecked = s.CalcEnabled;
         CalcCurrencyBox.IsChecked = s.CalcCurrency;
         CalcCopyBox.IsChecked = s.CalcCopyOnEnter;
         if (!SelectByTag(CalcDecimalsBox, s.CalcDecimals.ToString())) CalcDecimalsBox.SelectedIndex = 2;
@@ -144,6 +148,13 @@ public partial class SettingsWindow : Window
         s.BrightnessPopup = BrightnessBox.IsChecked == true;
         s.ChargingPopup = ChargingBox.IsChecked == true;
         s.PrivacyDots = PrivacyBox.IsChecked == true;
+        s.BatteryFullPopup = BatteryFullBox.IsChecked == true;
+        s.BatterySaverPopup = BatterySaverBox.IsChecked == true;
+        s.ScreenshotPopup = ScreenshotPopupBox.IsChecked == true;
+        s.ScreenshotToShelf = ScreenshotShelfBox.IsChecked == true;
+        ScreenshotShelfBox.IsEnabled = s.ScreenshotPopup;
+        s.RainPopup = RainPopupBox.IsChecked == true;
+        if (int.TryParse(SelectedTag(RainLeadBox), out int lead)) s.RainLeadMinutes = lead;
 
         s.ClipboardHistory = ClipboardBox.IsChecked == true;
         s.TimerSound = TimerSoundBox.IsChecked == true;
@@ -172,7 +183,6 @@ public partial class SettingsWindow : Window
         s.StatsNet = StatsNetBox.IsChecked == true;
 
         // Mic
-        s.MicButton = MicButtonBox.IsChecked == true;
         string hotkey = MicHotkeyBox.Text.Trim();
         if (hotkey.Length == 0 || KeySender.TryParseHotkey(hotkey, out _, out _)) s.MicHotkey = hotkey;
         MicHotkeyBox.Text = s.MicHotkey;
@@ -180,9 +190,7 @@ public partial class SettingsWindow : Window
         s.MicPopup = MicPopupBox.IsChecked == true;
 
         // Notes and calculator
-        s.NotesEnabled = NotesEnabledBox.IsChecked == true;
         s.NotesTextSize = SelectedTag(NotesSizeBox) ?? "normal";
-        s.CalcEnabled = CalcEnabledBox.IsChecked == true;
         s.CalcCurrency = CalcCurrencyBox.IsChecked == true;
         s.CalcCopyOnEnter = CalcCopyBox.IsChecked == true;
         if (int.TryParse(SelectedTag(CalcDecimalsBox), out int decimals)) s.CalcDecimals = decimals;

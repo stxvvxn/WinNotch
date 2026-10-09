@@ -28,7 +28,7 @@ public partial class MainWindow
     /// </summary>
     private void ShowHud(string glyph, double? level, string? text, string value,
                          TimeSpan? duration = null, Brush? iconBrush = null, Color? swatch = null,
-                         bool overGames = false)
+                         bool overGames = false, ImageSource? thumbnail = null)
     {
         // Low-battery warnings and the in-game glance still show while a game is fullscreen
         if (overGames && _hiddenForFullscreen && !_userHidden && !_hiddenForSnip && !_overlayActive)
@@ -42,8 +42,10 @@ public partial class MainWindow
         // Icon, or a colour swatch for the colour picker
         HudIcon.Text = glyph;
         HudIcon.Foreground = iconBrush ?? Brushes.White;
-        HudIcon.Visibility = Vis(swatch == null);
+        HudIcon.Visibility = Vis(swatch == null && thumbnail == null);
         HudSwatch.Visibility = Vis(swatch != null);
+        HudThumb.Visibility = Vis(thumbnail != null);
+        if (thumbnail != null) HudThumb.Background = new ImageBrush(thumbnail) { Stretch = Stretch.UniformToFill };
         if (swatch is Color c) HudSwatch.Fill = new SolidColorBrush(c);
 
         if (level is double l)

@@ -290,8 +290,8 @@
 
             <!-- ============ Open notch: tools (top-left) + message (top-centre) ============ -->
             <Grid x:Name="TopLeftBar" Height="34" VerticalAlignment="Top" Opacity="0" IsHitTestVisible="False">
-                <StackPanel Orientation="Horizontal" Margin="12,0,0,0" HorizontalAlignment="Left">
-                    <Button x:Name="CleanButton" Style="{StaticResource ToolButton}"
+                <StackPanel x:Name="TopButtonsPanel" Orientation="Horizontal" Margin="12,0,0,0" HorizontalAlignment="Left">
+                    <Button x:Name="CleanButton" Tag="clean" Style="{StaticResource ToolButton}"
                             ToolTip="Clean up junk files (temp files, crash dumps, browser caches)"
                             Click="CleanButton_Click">
                         <TextBlock x:Name="CleanIcon" Text="&#xE74D;" RenderTransformOrigin="0.5,0.5">
@@ -300,22 +300,22 @@
                             </TextBlock.RenderTransform>
                         </TextBlock>
                     </Button>
-                    <Button x:Name="TimerToolButton" Style="{StaticResource ToolButton}" Content="&#xE916;"
+                    <Button x:Name="TimerToolButton" Tag="timer" Style="{StaticResource ToolButton}" Content="&#xE916;"
                             ToolTip="Timer, stopwatch and Pomodoro" Click="TimerToolButton_Click"/>
-                    <Button x:Name="ClipboardToolButton" Style="{StaticResource ToolButton}" Content="&#xE77F;"
+                    <Button x:Name="ClipboardToolButton" Tag="clipboard" Style="{StaticResource ToolButton}" Content="&#xE77F;"
                             ToolTip="Clipboard history" Click="ClipboardToolButton_Click"/>
-                    <Button Style="{StaticResource ToolButton}" Content="&#xE790;"
+                    <Button Tag="colour" Style="{StaticResource ToolButton}" Content="&#xE790;"
                             ToolTip="Colour picker: click anywhere on screen to copy its colour"
                             Click="ColorPickerTool_Click"/>
-                    <Button Style="{StaticResource ToolButton}" Content="&#xE722;"
+                    <Button Tag="screenshot" Style="{StaticResource ToolButton}" Content="&#xE722;"
                             ToolTip="Screenshot to shelf" Click="ScreenshotTool_Click"/>
-                    <Button x:Name="ClaudeToolButton" Style="{StaticResource ToolButton}" Content="&#xE8BD;"
+                    <Button x:Name="ClaudeToolButton" Tag="claude" Style="{StaticResource ToolButton}" Content="&#xE8BD;"
                             ToolTip="Claude" Click="ClaudeToolButton_Click"/>
-                    <Button x:Name="MicToolButton" Style="{StaticResource ToolButton}" Content="&#xE720;"
+                    <Button x:Name="MicToolButton" Tag="mic" Style="{StaticResource ToolButton}" Content="&#xE720;"
                             ToolTip="Mute / unmute your microphone (every app)" Click="MicToolButton_Click"/>
-                    <Button x:Name="NotesToolButton" Style="{StaticResource ToolButton}" Content="&#xE70B;"
+                    <Button x:Name="NotesToolButton" Tag="notes" Style="{StaticResource ToolButton}" Content="&#xE70B;"
                             ToolTip="Quick notes" Click="NotesToolButton_Click"/>
-                    <Button x:Name="CalcToolButton" Style="{StaticResource ToolButton}" Content="&#xE8EF;"
+                    <Button x:Name="CalcToolButton" Tag="calc" Style="{StaticResource ToolButton}" Content="&#xE8EF;"
                             ToolTip="Calculator and converter" Click="CalcToolButton_Click"/>
                 </StackPanel>
                 <TextBlock x:Name="TopMessage" Foreground="#A0A0A0" FontSize="11" Margin="250,0,120,0"
@@ -374,6 +374,10 @@
                            Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 <Ellipse x:Name="HudSwatch" Width="14" Height="14" Stroke="#66FFFFFF" StrokeThickness="1"
                          VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                <!-- Screenshot thumbnail -->
+                <Border x:Name="HudThumb" Width="30" Height="20" CornerRadius="3" Margin="-4,0,-4,0"
+                        BorderBrush="#55FFFFFF" BorderThickness="1"
+                        VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
 
                 <Grid Grid.Column="1" Margin="10,0">
                     <Grid x:Name="HudBar" Height="4" VerticalAlignment="Center">

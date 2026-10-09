@@ -21,7 +21,6 @@ public partial class MainWindow
             _micTimer.Tick += (_, _) => PollMic();
         }
 
-        MicToolButton.Visibility = Vis(_settings.MicButton);
 
         // The shortcut works even when the button is hidden
         UnregisterMicHotkey();
@@ -37,7 +36,7 @@ public partial class MainWindow
             _micHotkeyRegistered = RegisterHotKey(_hwnd, MicHotkeyId, mods | MOD_NOREPEAT, key);
         }
 
-        bool needed = _settings.MicButton || _settings.MicShowDot || _micHotkeyRegistered;
+        bool needed = _settings.TopButtonShown("mic") || _settings.MicShowDot || _micHotkeyRegistered;
         if (needed) _micTimer.Start(); else _micTimer.Stop();
         PollMic();
     }

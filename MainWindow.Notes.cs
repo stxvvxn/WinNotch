@@ -43,13 +43,6 @@ public partial class MainWindow
         }
 
         NotesBox.FontSize = _settings.NotesTextSize switch { "small" => 11, "large" => 16, _ => 13 };
-        NotesToolButton.Visibility = Vis(_settings.NotesEnabled);
-        CalcToolButton.Visibility = Vis(_settings.CalcEnabled);
-        if ((_openTool == "notes" && !_settings.NotesEnabled) || (_openTool == "calc" && !_settings.CalcEnabled))
-        {
-            _openTool = null;
-            RefreshSections();
-        }
 
         ApplyMic();
         ApplyStats();
