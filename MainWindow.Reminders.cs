@@ -20,6 +20,7 @@ public partial class MainWindow
     private bool _reminderShowing;
     private string? _headerFlash;                     // "Set for 17:00" on the closed notch for a moment
     private DateTime _headerFlashUntil;
+    private string? _headerFlashGlyph;                // icon beside it (null = the bell)
 
     public IReadOnlyList<Reminder> Reminders => _reminders;
 
@@ -53,6 +54,7 @@ public partial class MainWindow
 
         var now = DateTime.Now;
         string time = r.Due.ToString("HH:mm");
+        _headerFlashGlyph = null;
         _headerFlash = r.IsTimer ? null
             : r.Due.Date == now.Date ? $"Set for {time}"
             : r.Due.Date == now.Date.AddDays(1) ? $"Set for tomorrow {time}"
@@ -266,7 +268,11 @@ public partial class MainWindow
         glyph = "\uEA8F"; // bell
         if (_headerFlash != null)
         {
-            if (now < _headerFlashUntil) return _headerFlash;
+            if (now < _headerFlashUntil)
+            {
+                glyph = _headerFlashGlyph ?? glyph;
+                return _headerFlash;
+            }
             _headerFlash = null;
         }
 

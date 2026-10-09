@@ -96,10 +96,12 @@ public partial class MainWindow
             {
                 _headerFlash = $"Updating… {Math.Round(p * 100)}%";
                 _headerFlashUntil = DateTime.Now.AddSeconds(30);
+                _headerFlashGlyph = "\uE896"; // download arrow
                 UpdateClock();
             });
             _headerFlash = "Updating…";
             _headerFlashUntil = DateTime.Now.AddSeconds(30);
+            _headerFlashGlyph = "\uE896"; // download arrow
             UpdateClock();
             await Updater.InstallAsync(update, progress);
             Application.Current.Shutdown(); // the new version is already starting
