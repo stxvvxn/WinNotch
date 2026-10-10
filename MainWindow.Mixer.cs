@@ -43,6 +43,7 @@ public partial class MainWindow
         if (_settings.MusicPage) pages.Add(3);
         if (_settings.VolumePage) pages.Add(1);
         if (_settings.ShelfPage) pages.Add(2);
+        if (_settings.TidyPage) pages.Add(4);
         return pages;
     }
 
@@ -62,6 +63,7 @@ public partial class MainWindow
         HomePage.Visibility = Vis(page == 0);
         MixerPage.Visibility = Vis(page == 1);
         ShelfPage.Visibility = Vis(page == 2);
+        TidyPage.Visibility = Vis(page == 4);
         MusicPage.Visibility = Vis(page == 3);
         if (page == 3) RefreshMusic(); else StopMusicTimer();
         BuildPageDots();
@@ -85,11 +87,12 @@ public partial class MainWindow
             _mixerTimer.Stop();
         }
         if (page == 2) RefreshShelf();
+        if (page == 4) RefreshTidy();
 
         if (animate && changed)
         {
             // Slide the new page in from the direction you scrolled
-            var shown = page switch { 1 => (FrameworkElement)MixerPage, 2 => ShelfPage, 3 => MusicPage, _ => HomePage };
+            var shown = page switch { 1 => (FrameworkElement)MixerPage, 2 => ShelfPage, 3 => MusicPage, 4 => TidyPage, _ => HomePage };
             var move = new TranslateTransform(0, down ? 14 : -14);
             shown.RenderTransform = move;
             var ease = new CubicEase { EasingMode = EasingMode.EaseOut };

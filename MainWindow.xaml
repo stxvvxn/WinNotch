@@ -497,6 +497,39 @@
                                 </Border>
                             </StackPanel>
                         </StackPanel>
+
+                        <!-- Tidy up: clear temp folders and the Recycle Bin, run your own scripts -->
+                        <StackPanel x:Name="TidyPage" Visibility="Collapsed" Margin="0,12,0,0">
+                            <DockPanel Margin="4,0,2,6">
+                                <TextBlock x:Name="TidyRescan" DockPanel.Dock="Right" Text="Check again" FontSize="10.5"
+                                           Foreground="{StaticResource Secondary}" Cursor="Hand" MouseLeftButtonUp="TidyRescan_Click"/>
+                                <TextBlock Text="CLEAN UP" Foreground="{StaticResource Secondary}" FontSize="10.5" FontWeight="SemiBold"/>
+                            </DockPanel>
+                            <Border Background="{DynamicResource Surface}" CornerRadius="12" Padding="4,4,4,8">
+                                <StackPanel>
+                                    <StackPanel x:Name="CleanRows"/>
+                                    <TextBlock x:Name="CleanEmpty" Text="Nothing to clean - add folders in Settings → Tidy up" Visibility="Collapsed"
+                                               Foreground="{StaticResource Secondary}" FontSize="11.5" Margin="10,8" TextWrapping="Wrap"/>
+                                    <DockPanel Margin="10,8,6,0">
+                                        <Button x:Name="CleanAllButton" DockPanel.Dock="Right" Style="{StaticResource AlertButton}"
+                                                Content="Clean all" Click="CleanAll_Click" Background="{DynamicResource Accent}" Foreground="Black"/>
+                                        <TextBlock x:Name="CleanSummary" Foreground="{StaticResource Secondary}" FontSize="11.5"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel x:Name="ScriptArea" Margin="0,12,0,0">
+                                <TextBlock Text="SCRIPTS" Foreground="{StaticResource Secondary}" FontSize="10.5" FontWeight="SemiBold" Margin="4,0,2,6"/>
+                                <Border Background="{DynamicResource Surface}" CornerRadius="12" Padding="4">
+                                    <StackPanel>
+                                        <StackPanel x:Name="ScriptRows"/>
+                                        <TextBlock x:Name="ScriptEmpty" Foreground="{StaticResource Secondary}" FontSize="11.5" Margin="10,8"
+                                                   TextWrapping="Wrap" Text="Add your own .bat, .cmd or .ps1 files in Settings → Tidy up to run them from here with one click."/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
 
                     <!-- Which page you're on -->

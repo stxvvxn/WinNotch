@@ -76,6 +76,11 @@ public sealed class AppSettings
     public bool MusicExtras { get; set; } = true;      // service buttons like Spotify's Like and Smart Shuffle
 
     // Shelf (the page after volume)
+    public bool TidyPage { get; set; } = true;                // Tidy up page: clean temp folders, run your scripts
+    public List<CleanPath> CleanPaths { get; set; } = Tidy.DefaultPaths();
+    public bool CleanRecycleBin { get; set; } = true;
+    public int CleanOlderThanHours { get; set; } = 24;        // leave files newer than this (0 = clean everything)
+    public List<TidyScript> TidyScripts { get; set; } = new();
     public bool ShelfPage { get; set; } = true;
     public bool ShelfAutoOpen { get; set; } = true;        // dragging a file onto the notch opens the shelf
     public bool ShelfRemember { get; set; } = true;        // keep the shelf between restarts

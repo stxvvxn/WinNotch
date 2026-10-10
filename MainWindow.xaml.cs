@@ -102,6 +102,7 @@ public partial class MainWindow : Window
         BuildStatTiles();
         UpdateQuote();
         ApplyHome();
+        ApplyTidy();
         BuildBubbles();
         ApplyScratch();
         ApplyScreenshots();

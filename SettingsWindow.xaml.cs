@@ -29,6 +29,11 @@ public partial class SettingsWindow : Window
         HideInFullscreenBox.IsChecked = s.HideInFullscreen;
         SecondsBox.IsChecked = s.ShowSeconds;
         ShowQuoteBox.IsChecked = s.ShowQuote;
+        TidyPageBox.IsChecked = s.TidyPage;
+        CleanRecycleBinBox.IsChecked = s.CleanRecycleBin;
+        if (!SelectByTag(CleanAgeBox, s.CleanOlderThanHours.ToString())) SelectByTag(CleanAgeBox, "24");
+        BuildCleanPathList();
+        BuildScriptList();
         WeatherBox.IsChecked = s.WeatherEnabled;
         WeatherPlaceBox.Text = s.WeatherPlace;
         if (s.WeatherPlace.Length > 0) WeatherStatus.Text = $"Showing the weather for {s.WeatherPlace}";
@@ -180,6 +185,9 @@ public partial class SettingsWindow : Window
         s.HideInFullscreen = HideInFullscreenBox.IsChecked == true;
         s.ShowSeconds = SecondsBox.IsChecked == true;
         s.ShowQuote = ShowQuoteBox.IsChecked == true;
+        s.TidyPage = TidyPageBox.IsChecked == true;
+        s.CleanRecycleBin = CleanRecycleBinBox.IsChecked == true;
+        s.CleanOlderThanHours = int.TryParse(SelectedTag(CleanAgeBox), out int age) ? age : 24;
         s.AutoUpdate = AutoUpdateBox.IsChecked == true;
         string repo = UpdateRepoBox.Text.Trim().Replace("https://github.com/", "").Trim('/');
         if (System.Text.RegularExpressions.Regex.IsMatch(repo, @"^[\w.-]+/[\w.-]+$")) s.UpdateRepo = repo;

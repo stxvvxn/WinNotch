@@ -592,6 +592,74 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- ============ Tidy up ============ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xEA99;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,1,10,0"/>
+                        <TextBlock Text="Tidy up"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer Style="{StaticResource Page}">
+                    <StackPanel>
+                        <TextBlock Text="TIDY UP PAGE" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <CheckBox x:Name="TidyPageBox" Content="Tidy up page (the brush bubble under the open notch)" Click="Changed"/>
+                                <TextBlock Style="{StaticResource Hint}" Margin="22,2,0,6"
+                                           Text="Shows how much space each folder below is using, cleans them with one click, and runs your own scripts."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="FOLDERS TO CLEAN" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel x:Name="CleanPathList" Margin="0,4,0,4"/>
+                                <DockPanel Margin="0,4,0,0">
+                                    <Button Content="Add" Click="AddCleanPath_Click" DockPanel.Dock="Right" Padding="14,5" Margin="8,0,0,0"/>
+                                    <Button Content="Browse…" Click="BrowseCleanPath_Click" DockPanel.Dock="Right" Padding="12,5" Margin="8,0,0,0"/>
+                                    <TextBox x:Name="NewCleanPathBox" Style="{StaticResource Field}" KeyDown="NewCleanPath_KeyDown"
+                                             ToolTip="A folder whose contents get cleared, e.g. %LOCALAPPDATA%\SomeApp\Cache"/>
+                                </DockPanel>
+                                <TextBlock x:Name="CleanPathStatus" Style="{StaticResource Hint}" Margin="0,0,0,6"
+                                           Text="Everything inside these folders is deleted for good (not to the Recycle Bin); the folders themselves stay. Files that are in use are skipped. You can use %TEMP%, %LOCALAPPDATA% and so on."/>
+                                <CheckBox x:Name="CleanRecycleBinBox" Content="Empty the Recycle Bin too" Click="Changed"/>
+                                <DockPanel>
+                                    <TextBlock Text="Leave alone files changed in the last" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="CleanAgeBox" Width="160" HorizontalAlignment="Left" Margin="0,5" SelectionChanged="Changed">
+                                        <ComboBoxItem Content="(clean everything)" Tag="0"/>
+                                        <ComboBoxItem Content="hour" Tag="1"/>
+                                        <ComboBoxItem Content="day" Tag="24"/>
+                                        <ComboBoxItem Content="week" Tag="168"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,6"
+                                           Text="Apps that are open may still be using recent temp files, so leaving the last day's alone is the safe choice."/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="SCRIPTS" Style="{StaticResource Heading}"/>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel x:Name="ScriptList" Margin="0,4,0,4"/>
+                                <DockPanel Margin="0,4,0,0">
+                                    <TextBlock Text="Name" VerticalAlignment="Center" Width="60"/>
+                                    <TextBox x:Name="NewScriptNameBox" Style="{StaticResource Field}" ToolTip="What the button is called, e.g. Move downloads"/>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="File" VerticalAlignment="Center" Width="60"/>
+                                    <Button Content="Add" Click="AddScript_Click" DockPanel.Dock="Right" Padding="14,5" Margin="8,0,0,0"/>
+                                    <Button Content="Browse…" Click="BrowseScript_Click" DockPanel.Dock="Right" Padding="12,5" Margin="8,0,0,0"/>
+                                    <TextBox x:Name="NewScriptPathBox" Style="{StaticResource Field}" KeyDown="NewScript_KeyDown"/>
+                                </DockPanel>
+                                <TextBlock x:Name="ScriptStatus" Style="{StaticResource Hint}" Margin="0,0,0,6"
+                                           Text="A .bat, .cmd or .ps1 file (or any program). It runs from its own folder. Normally it runs quietly and the notch shows whether it worked - hover over it to see what it printed. Tick 'Show window' to watch it run, or 'As admin' if it needs it (Windows will ask first)."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- ============ Reminders ============ -->
             <TabItem>
                 <TabItem.Header>

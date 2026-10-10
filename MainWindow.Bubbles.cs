@@ -51,6 +51,7 @@ public partial class MainWindow
         1 => ("\uE767", "Volume"),
         2 => ("\uE7B8", "Shelf"),
         3 => ("\uE8D6", "Music"),
+        4 => ("\uEA99", "Tidy up"),
         _ => ("\uE9D9", "System info"),
     };
 

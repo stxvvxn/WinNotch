@@ -87,6 +87,19 @@ SHELF PAGE
 - Scratch pad for quick notes, saved as you type
 
 
+TIDY UP PAGE
+------------
+- Shows how much space your temp folders and the Recycle Bin are using
+- Clean each one, or everything at once (asks once before it goes)
+- Starts with your temp folder (%TEMP%) and C:\Windows\Temp; add your own
+  folders in Settings → Tidy up (drives, Windows and your main folders are
+  protected so they can't be emptied by mistake)
+- Leaves files that are in use, and by default anything changed in the last day
+- Run your own .bat, .cmd or .ps1 scripts with one click - quietly in the
+  background or in a window, or as admin; the notch shows whether it worked
+  and what it printed
+
+
 BUBBLES
 -------
 - Round shortcut buttons around the open notch (sides and bottom) for your
